@@ -8,19 +8,20 @@ public class UserMigration implements IMigration {
 
     @Override
     public void run(Connection connection) throws SQLException {
-        System.out.println("User migration started");
+        System.out.println("Payment migration started");
       String sql = """
               CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
+                user_id SERIAL PRIMARY KEY,
                 firstname VARCHAR(25) NOT NULL,
                 lastname VARCHAR(25) NOT NULL,
                 gender VARCHAR(1) NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 address VARCHAR(100) NOT NULL,
-                password VARCHAR(100) NOT NULL,
+                password_hash VARCHAR(255) NOT NULL, -- store hashed password
+                role VARCHAR(20) DEFAULT 'CUSTOMER', -- CUSTOMER, MERCHANT, ADMIN
                 created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT chk_password_length CHECK (LENGTH(password) >= 8)
+                user_token VARCHAR(100)
               )
               """;
 
@@ -28,6 +29,6 @@ public class UserMigration implements IMigration {
       try (Statement stmt = connection.createStatement()){
             stmt.executeUpdate(sql);
       }
-        System.out.println("User migration completed!");
+        System.out.println("Payment migration completed!");
     }
 }

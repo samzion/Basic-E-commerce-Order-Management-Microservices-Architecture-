@@ -11,7 +11,7 @@ public class MigrationRunner {
     public MigrationRunner() {
         migrations = new ArrayList<>();
         migrations.add(new UserMigration());
-        migrations.add(new AddUserTokenMigration());
+        migrations.add(new MerchantMigration());
     }
 
     public void runMigrations(Connection conn) throws SQLException {

@@ -1,5 +1,6 @@
 package orderManagement;
 
+import orderManagement.db.migrations.MigrationRunner;
 import userManagement.db.DataBaseConnection;
 
 import java.io.FileInputStream;
@@ -28,5 +29,8 @@ public class RunOrderManagement {
         // Now you can call getConnection without arguments
         Connection connection = DataBaseConnection.getConnection();
         System.out.println("Connected successfully: " + connection.getMetaData().getDatabaseProductName() + " - Order Management DB");
+
+        MigrationRunner migrationRunner = new MigrationRunner();
+        migrationRunner.runMigrations(connection);
     }
 }
