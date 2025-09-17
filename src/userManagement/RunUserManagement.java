@@ -1,6 +1,7 @@
 package userManagement;
 
 import userManagement.db.DataBaseConnection;
+import userManagement.db.migrations.MigrationRunner;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,5 +29,8 @@ public class RunUserManagement {
         // Now you can call getConnection without arguments
         Connection connection = DataBaseConnection.getConnection();
         System.out.println("Connected successfully: " + connection.getMetaData().getDatabaseProductName() + " - User Management DB");
+
+        MigrationRunner migrationRunner = new MigrationRunner();
+        migrationRunner.runMigrations(connection);
     }
 }

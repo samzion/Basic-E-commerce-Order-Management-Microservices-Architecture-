@@ -1,5 +1,6 @@
 package paymentManagement;
 
+import paymentManagement.db.migrations.MigrationRunner;
 import userManagement.db.DataBaseConnection;
 
 import java.io.FileInputStream;
@@ -28,5 +29,9 @@ public class RunPaymentManagement {
         // Now you can call getConnection without arguments
         Connection connection = DataBaseConnection.getConnection();
         System.out.println("Connected successfully: " + connection.getMetaData().getDatabaseProductName() + " - Payment Management DB");
+
+
+        MigrationRunner migrationRunner = new MigrationRunner();
+        migrationRunner.runMigrations(connection);
     }
 }

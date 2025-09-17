@@ -11,15 +11,15 @@ public class AccountMigration implements IMigration {
         System.out.println("Account migration started!");
       String sql = """ 
               CREATE TABLE IF NOT EXISTS accounts (
-              id SERIAL PRIMARY KEY,
+              account_id SERIAL PRIMARY KEY,
               user_id INT NOT NULL,
               account_number VARCHAR(20) UNIQUE NOT NULL,
               account_name VARCHAR(100) NOT NULL,
               bank VARCHAR(100) DEFAULT 'default',
               balance DECIMAL(15,2) DEFAULT 0.00,
               created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE )
+              updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+               )
               """;
 
       try (Statement stmt = connection.createStatement()){

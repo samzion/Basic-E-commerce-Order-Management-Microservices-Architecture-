@@ -10,7 +10,10 @@ public class MigrationRunner {
 
     public MigrationRunner() {
         migrations = new ArrayList<>();
-
+        migrations.add(new ProductMigration());
+        migrations.add(new OrderMigration());
+        migrations.add(new OrderItemMigration());
+        migrations.add(new ShipmentMigration());
     }
 
     public void runMigrations(Connection conn) throws SQLException {
