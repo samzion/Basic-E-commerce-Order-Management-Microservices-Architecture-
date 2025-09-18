@@ -1,12 +1,24 @@
 package userManagement;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import userManagement.db.DataBaseConnection;
 import userManagement.db.migrations.MigrationRunner;
+import userManagement.httpHandlers.MerchantCreationHandler;
+import userManagement.httpHandlers.UserCreationHandler;
+import userManagement.httpHandlers.UserLoginHandler;
+import userManagement.services.MerchantService;
+import userManagement.services.UserService;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class RunUserManagement {
@@ -16,7 +28,7 @@ public class RunUserManagement {
         // Load configuration from file
         Properties props = new Properties();
         props.load(new FileInputStream("userManagementConfiguration.properties"));
-
+//TODO: move configuration inside package
         String url = props.getProperty("dbUrl");
         String user = props.getProperty("dbUser");
         String password = props.getProperty("dbPassword");
@@ -40,7 +52,7 @@ public class RunUserManagement {
             HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
 
             UserService userService = new UserService(connection);
-            MerchantService merchantService = new MerchantService();
+            MerchantService merchantService = new MerchantService(connection);
 
 
             // Create a context for a specific path and set the handler
@@ -61,7 +73,7 @@ public class RunUserManagement {
         }
     }
 
-    // Define a custom HttpHandler
+    // Define a Default HttpHandler
     static class DefaultHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException

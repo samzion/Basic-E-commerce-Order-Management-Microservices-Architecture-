@@ -11,7 +11,7 @@ public class AccountMigration implements IMigration {
         System.out.println("Account migration started!");
       String sql = """ 
               CREATE TABLE IF NOT EXISTS accounts (
-              account_id SERIAL PRIMARY KEY,
+              id SERIAL PRIMARY KEY,
               user_id INT NOT NULL,
               account_number VARCHAR(20) UNIQUE NOT NULL,
               account_name VARCHAR(100) NOT NULL,

@@ -11,7 +11,7 @@ public class ProductMigration implements IMigration {
         System.out.println("Product migration started");
       String sql = """ 
               CREATE TABLE IF NOT EXISTS products (
-                      product_id BIGSERIAL PRIMARY KEY,
+                      id BIGSERIAL PRIMARY KEY,
                       merchant_id BIGINT NOT NULL,                  -- merchant ID from UserManagement DB
                       name VARCHAR(255) NOT NULL,
                       description TEXT,

@@ -11,10 +11,8 @@ public class OrderMigration implements IMigration {
         System.out.println("Order migration started");
       String sql = """ 
               CREATE TABLE IF NOT EXISTS orders (
-                         order_id BIGSERIAL PRIMARY KEY,
+                         id BIGSERIAL PRIMARY KEY,
                          user_id BIGINT NOT NULL,                      -- buyer (from UserManagement DB)
-                         merchant_id BIGINT NOT NULL,                  -- seller/merchant
-                         total_amount DECIMAL(12,2) NOT NULL,
                          status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

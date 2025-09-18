@@ -11,8 +11,7 @@ public class TransactionMigration implements IMigration {
         System.out.println("Transaction migration started!");
       String sql = """ 
                   CREATE TABLE IF NOT EXISTS transactions (
-                  transaction_id SERIAL PRIMARY KEY,
-                  payment_id INT,                         -- optional, if tied to an order payment
+                  id SERIAL PRIMARY KEY,
                   from_account INT NOT NULL,              -- account sending money
                   to_account INT NOT NULL,                -- account receiving money
                   amount DECIMAL(12,2) NOT NULL,

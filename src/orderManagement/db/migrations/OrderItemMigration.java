@@ -10,15 +10,18 @@ public class OrderItemMigration implements IMigration {
     public void run(Connection connection) throws SQLException {
         System.out.println("Order item migration started");
         String sql = """ 
-                  CREATE TABLE IF NOT EXISTS order_items (
-                    order_item_id BIGSERIAL PRIMARY KEY,
-                    order_id BIGINT NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
-                    product_id BIGINT NOT NULL REFERENCES products(product_id),
-                    quantity INT NOT NULL CHECK (quantity > 0),
-                    price DECIMAL(12,2) NOT NULL,                 -- price at time of purchase
-                    total DECIMAL(12,2) GENERATED ALWAYS AS (quantity * price) STORED
-                  );
-                  """;
+                CREATE TABLE IF NOT EXISTS order_items (
+                  id BIGSERIAL PRIMARY KEY,
+                  order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+                  product_id BIGINT NOT NULL REFERENCES products(id),
+                  quantity INT NOT NULL CHECK (quantity > 0),
+                  status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+                  price DECIMAL(12,2) NOT NULL,                 -- price at time of purchase
+                  total DECIMAL(12,2) GENERATED ALWAYS AS (quantity * price) STORED,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+        """;
 
         try (Statement stmt = connection.createStatement()){
             stmt.executeUpdate(sql);

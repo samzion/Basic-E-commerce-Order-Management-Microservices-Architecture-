@@ -8,10 +8,10 @@ public class UserMigration implements IMigration {
 
     @Override
     public void run(Connection connection) throws SQLException {
-        System.out.println("Payment migration started");
+        System.out.println("User migration started");
       String sql = """
               CREATE TABLE IF NOT EXISTS users (
-                user_id SERIAL PRIMARY KEY,
+                id SERIAL PRIMARY KEY,
                 firstname VARCHAR(25) NOT NULL,
                 lastname VARCHAR(25) NOT NULL,
                 gender VARCHAR(1) NOT NULL,
@@ -24,11 +24,11 @@ public class UserMigration implements IMigration {
                 user_token VARCHAR(100)
               )
               """;
-
+// TODO: Move All enums to enums subpackage in models package. All requests, entities, responses, go into model
 
       try (Statement stmt = connection.createStatement()){
             stmt.executeUpdate(sql);
       }
-        System.out.println("Payment migration completed!");
+        System.out.println("User migration completed!");
     }
 }
