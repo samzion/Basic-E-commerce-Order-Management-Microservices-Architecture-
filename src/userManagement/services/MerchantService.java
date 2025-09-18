@@ -3,15 +3,10 @@ package userManagement.services;
 
 import userManagement.db.DataBaseConnection;
 import userManagement.models.Merchant;
-import userManagement.models.User;
-import userManagement.models.request.MerchantCreationRequest;
-import userManagement.models.request.UserCreationRequest;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 public class MerchantService {
 

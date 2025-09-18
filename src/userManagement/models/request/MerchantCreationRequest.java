@@ -1,9 +1,5 @@
 package userManagement.models.request;
 
-import userManagement.models.Merchant;
-import userManagement.models.User;
-import userManagement.utilities.PasswordUtil;
-
 public class MerchantCreationRequest {
 
     private String businessName;

@@ -49,7 +49,6 @@ public class UserCreationHandler implements HttpHandler {
         }
         User newCreatedUser= null;
         try {
-
             newCreatedUser = this.userService.createUser(userCreationRequest);
             if(newCreatedUser == null){
                 RunUserManagement.writeHttpResponse(exchange, 409, "User already exists");
