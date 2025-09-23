@@ -18,8 +18,8 @@ public class AccountMigration implements IMigration {
               bank VARCHAR(100) DEFAULT 'default',
               balance DECIMAL(15,2) DEFAULT 0.00,
               created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE )
+              updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+               )
               """;
 
       try (Statement stmt = connection.createStatement()){
