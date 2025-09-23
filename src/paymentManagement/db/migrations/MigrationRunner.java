@@ -11,7 +11,6 @@ public class MigrationRunner {
     public MigrationRunner() {
         migrations = new ArrayList<>();
         migrations.add(new AccountMigration());
-        migrations.add(new PaymentMigration());
         migrations.add(new TransactionMigration());
     }
 

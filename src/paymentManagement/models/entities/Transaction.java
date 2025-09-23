@@ -1,6 +1,7 @@
 package paymentManagement.models.entities;
 
-import oop.TransactionType;
+
+import paymentManagement.enums.TransactionType;
 
 import java.time.LocalDateTime;
 

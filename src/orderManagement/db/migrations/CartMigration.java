@@ -11,11 +11,11 @@ public class CartMigration implements IMigration {
         System.out.println("Cart migration started");
         String sql = """ 
                 CREATE TABLE IF NOT EXISTS carts (
-                    cart_id      SERIAL PRIMARY KEY,
-                    user_id      INT NOT NULL REFERENCES users(user_id),
+                    id      SERIAL PRIMARY KEY,
+                    user_id      INT NOT NULL,
                     status       VARCHAR(20) DEFAULT 'active', -- active, checked_out, abandoned
-                    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_on   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_on   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                           )
         """;
 

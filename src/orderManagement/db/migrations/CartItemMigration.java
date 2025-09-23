@@ -12,12 +12,12 @@ public class CartItemMigration implements IMigration {
         String sql = """ 
                 CREATE TABLE IF NOT EXISTS cart_items (
                 id SERIAL PRIMARY KEY,
-                cart_id      INT NOT NULL REFERENCES carts(cart_id) ON DELETE CASCADE,
-                product_id   INT NOT NULL REFERENCES products(product_id),
+                cart_id      INT NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
+                product_id   INT NOT NULL REFERENCES products(id),
                 quantity     INT NOT NULL CHECK (quantity > 0),
                 status       VARCHAR(20) DEFAULT 'active', -- active, checked_out, abandoned,
-                added_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_on     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_on   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
         """;
 

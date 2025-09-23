@@ -14,12 +14,11 @@ public class ProductMigration implements IMigration {
                       id BIGSERIAL PRIMARY KEY,
                       merchant_id BIGINT NOT NULL,                  -- merchant ID from UserManagement DB
                       name VARCHAR(255) NOT NULL,
-                      description TEXT,
                       price DECIMAL(12,2) NOT NULL,
                       stock INT NOT NULL CHECK (stock >= 0),        -- available units
                       category VARCHAR(100),
-                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                      created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                   );
               """;
 

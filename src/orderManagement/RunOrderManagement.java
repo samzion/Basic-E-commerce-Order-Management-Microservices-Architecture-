@@ -32,5 +32,7 @@ public class RunOrderManagement {
 
         MigrationRunner migrationRunner = new MigrationRunner();
         migrationRunner.runMigrations(connection);
+
+
     }
 }

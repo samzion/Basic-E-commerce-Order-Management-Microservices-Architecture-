@@ -18,8 +18,8 @@ public class OrderItemMigration implements IMigration {
                   status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
                   price DECIMAL(12,2) NOT NULL,                 -- price at time of purchase
                   total DECIMAL(12,2) GENERATED ALWAYS AS (quantity * price) STORED,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                  created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
         """;
 

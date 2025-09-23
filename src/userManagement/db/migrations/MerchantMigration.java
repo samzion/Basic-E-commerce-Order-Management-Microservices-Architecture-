@@ -17,7 +17,7 @@ public class MerchantMigration implements IMigration {
                    business_address TEXT,
                    phone_number VARCHAR(20),
                    verified BOOLEAN DEFAULT FALSE,
-                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                   created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                    updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
                )

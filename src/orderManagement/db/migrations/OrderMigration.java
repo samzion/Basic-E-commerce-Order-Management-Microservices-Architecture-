@@ -14,8 +14,8 @@ public class OrderMigration implements IMigration {
                          id BIGSERIAL PRIMARY KEY,
                          user_id BIGINT NOT NULL,                      -- buyer (from UserManagement DB)
                          status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
-                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                         created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                         updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                      );
               """;
 

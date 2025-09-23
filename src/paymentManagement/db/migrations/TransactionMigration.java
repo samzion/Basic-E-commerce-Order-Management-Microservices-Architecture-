@@ -17,8 +17,8 @@ public class TransactionMigration implements IMigration {
                   amount DECIMAL(12,2) NOT NULL,
                   transaction_type VARCHAR(20),           -- DEBIT, CREDIT, TRANSFER
                   status VARCHAR(20) DEFAULT 'PENDING',   -- PENDING, SUCCESS, FAILED
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                   FOREIGN KEY (payment_id) REFERENCES payments(payment_id) ON DELETE SET NULL)
               """;
 

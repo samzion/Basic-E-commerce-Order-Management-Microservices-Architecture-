@@ -1,6 +1,7 @@
 package paymentManagement.models.response;
 
-import oop.models.entities.Account;
+
+import paymentManagement.models.entities.Account;
 
 import java.util.List;
 

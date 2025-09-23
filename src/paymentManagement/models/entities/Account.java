@@ -1,13 +1,8 @@
 package paymentManagement.models.entities;
-import oop.TransactionType;
-import oop.TransferProcessor;
-import oop.bank.DefaultTransfer;
-import oop.services.AccountService;
-import oop.services.LoanService;
-import oop.services.TransactionService;
 
-import java.sql.SQLException;
-import java.time.LocalDate;
+
+import paymentManagement.enums.TransactionType;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +20,6 @@ public class Account {
     List<Loan> loans = new ArrayList<>();
 
     public Account() {
-    }
-
-    public Account(User user) {
-        this.userID = user.getId();
     }
 
     public int getId() {
@@ -151,54 +142,7 @@ public class Account {
         return true;
     }
 
-    public boolean collectLoan(double amount, Account samsonBankaccount){
-        if (TransferProcessor.transfer(amount, samsonBankaccount, this)){
-            Loan loan = new Loan(amount, LocalDate.now(),LocalDate.now().plusWeeks(2));
-            this.loans.add(loan);
-            System.out.println("loan of " + amount +  " has been disbursed into " +  this.getAccountName() + "'s account");
-            return true;
-        } else {
-            System.out.println("Sorry, No loan available at this time. Try again next time");
-        }
-        return false;
-    }
 
-    public boolean payLoan(double amount, Account lenderAccount) throws SQLException, ClassNotFoundException {
-        DefaultTransfer transferLoan = new DefaultTransfer();
-        AccountService accountService = new AccountService();
-        LoanService loanService = new LoanService();
-        TransactionService transactionService =  new TransactionService();
-        for(Loan loan: this.loans){
-            //check if there is any loan left to be paid and check amount to be paid
-            if(loan.amountPaid == loan.amountBorrowed){
-                continue;
-            }
-            double amountToBePaid = loan.amountBorrowed - loan.amountPaid;
-            if(loan.amountPaid < loan.amountBorrowed && amount > amountToBePaid){
-               TransferProcessor.transfer(amountToBePaid,this  , lenderAccount);
-                loan.amountPaid+= amountToBePaid;
-                amount = amount - loan.amountBorrowed-loan.amountPaid;
-                loanService.updateLoan(loan);
-                accountService.updateAccountBalance(this);
-                accountService.updateAccountBalance(lenderAccount);
-                transactionService.createTransaction(this, amountToBePaid, TransactionType.DEBIT);
-                transactionService.createTransaction(lenderAccount, amountToBePaid, TransactionType.CREDIT);
-
-            } else if(loan.amountPaid < loan.amountBorrowed && amount <= amountToBePaid) {
-               TransferProcessor.transfer(amount,this   , lenderAccount );
-                loan.amountPaid+=amount;
-                System.out.println("Loan payment successful!!!");
-                loanService.updateLoan(loan);
-                accountService.updateAccountBalance(this);
-                accountService.updateAccountBalance(lenderAccount);
-                transactionService.createTransaction(this, amount, TransactionType.DEBIT);
-                transactionService.createTransaction(lenderAccount, amount, TransactionType.CREDIT);
-                return true;
-            }
-        }
-        System.out.println("No loan to be paid");
-        return false;
-    }
 
 
     public String toString(){

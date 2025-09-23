@@ -45,19 +45,6 @@ public class MerchantCreationRequest {
             }
 
             return "Merchant creation request okay!";
-        }
-
-//        public static Merchant createMerchantObject(MerchantCreationRequest merchantCreationRequest){
-//            Merchant merchant = new Merchant();
-//
-//            user.setFirstName(userCreationRequest.getFirstName());
-//            user.setLastName(userCreationRequest.getLastName());
-//            user.setEmail(userCreationRequest.getEmail());
-//            user.setAddress(userCreationRequest.getAddress());
-//            user.setGender(userCreationRequest.getGender());
-//            String passwordHash = PasswordUtil.hashPassword(userCreationRequest.getPassword());
-//            user.setPasswordHash(passwordHash);
-//            return user;
-//        }
+    }
 }
 
