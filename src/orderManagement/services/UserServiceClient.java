@@ -2,8 +2,8 @@ package orderManagement.services;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
-import orderManagement.RunOrderManagement;
 import orderManagement.models.responses.UserMerchantDetails;
+import orderManagement.models.responses.UserMerchantPlusMessage;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -34,35 +34,36 @@ public class UserServiceClient {
 
 
 
-    public UserMerchantDetails getMerchantAuthorization(HttpExchange exchange) throws Exception {
+    public UserMerchantPlusMessage getUserMerchantDetails(HttpExchange exchange) throws Exception {
         var headers = exchange.getRequestHeaders();
         String authorization = headers.getFirst("Authorization");
-
+        UserMerchantPlusMessage userMerchantPlusMessage = new UserMerchantPlusMessage();
         if (authorization == null) {
-            RunOrderManagement.writeHttpResponse (exchange, 401, "Missing Authorization header");
-            return null;
+            String errorMessage = "Unauthorized!";
+            userMerchantPlusMessage.setErrorMessage(errorMessage);
+            userMerchantPlusMessage.setUserMerchantDetails(null);
+            return userMerchantPlusMessage;
         }
 
         String[] authHeaderArray = authorization.split("/");
         if (authHeaderArray.length != 2) {
-            RunOrderManagement.writeHttpResponse(exchange, 400, "Invalid Authorization header format");
-            return null;
+            String errorMessage = "Invalid Authorization header format!";
+            userMerchantPlusMessage.setErrorMessage(errorMessage);
+            userMerchantPlusMessage.setUserMerchantDetails(null);
+            return userMerchantPlusMessage;
         }
 
         UserServiceClient userClient = new UserServiceClient();
         UserMerchantDetails validation = userClient.validateUser(authorization);
 
         if (validation == null) {
-            RunOrderManagement.writeHttpResponse(exchange, 401, "Unauthorized: invalid credentials");
-            return null;
+            String errorMessage = "Unauthorized: invalid credentials";
+            userMerchantPlusMessage.setErrorMessage(errorMessage);
+            userMerchantPlusMessage.setUserMerchantDetails(null);
+            return userMerchantPlusMessage;
         }
-
-        if (validation.getMerchantId() == 0) {
-            RunOrderManagement.writeHttpResponse (exchange, 403, "Forbidden: insufficient role");
-            return null;
-        }
-        System.out.println("User authorised to add product");
-        return validation; // authorized
+        userMerchantPlusMessage.setUserMerchantDetails(validation);
+        return userMerchantPlusMessage; // authorized
     }
 
         public UserMerchantDetails validateUser(String auth) throws Exception {

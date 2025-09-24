@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import orderManagement.db.migrations.MigrationRunner;
+import orderManagement.httpHandlers.IncreaseStockHandler;
 import orderManagement.httpHandlers.InsertProductHandler;
+import orderManagement.httpHandlers.ReduceStockHandler;
 import orderManagement.services.ProductService;
 import orderManagement.services.UserServiceClient;
 import userManagement.db.DataBaseConnection;
@@ -54,6 +56,8 @@ public class RunOrderManagement {
             server.createContext("/", new DefaultHandler());
             //TODO: Create a landing page path called homeHandler to return all the APIs that is supported.
             server.createContext("/insert-product", new InsertProductHandler(productService));
+            server.createContext("/reduce-stock", new ReduceStockHandler(productService));
+            server.createContext("/increase-stock", new IncreaseStockHandler(productService));
 
 
             // Start the server

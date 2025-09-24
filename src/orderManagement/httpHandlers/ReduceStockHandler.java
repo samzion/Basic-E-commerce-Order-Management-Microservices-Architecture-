@@ -8,10 +8,11 @@ import orderManagement.RunOrderManagement;
 import orderManagement.models.entties.Product;
 import orderManagement.models.responses.UserMerchantDetails;
 import orderManagement.models.responses.UserMerchantPlusMessage;
-import orderManagement.requests.InsertProductRequest;
+import orderManagement.requests.ReduceStockRequest;
 import orderManagement.services.ProductService;
 import orderManagement.services.UserServiceClient;
 import userManagement.RunUserManagement;
+import userManagement.models.Role;
 import userManagement.utilities.LocalDateTimeAdapter;
 
 import java.io.IOException;
@@ -20,23 +21,20 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
-public class InsertProductHandler extends BaseHandler implements HttpHandler {
-
-    public InsertProductHandler(ProductService productService) {
+public class ReduceStockHandler extends BaseHandler implements HttpHandler {
+    public ReduceStockHandler(ProductService productService) {
         super(productService);
     }
-
-    // 1. validate method is POST
-    // 2. validate if request has authorization in header
-    // 3. fetch User details join on merchant details by calling user mgt. MS
-          // if User id is null return 404 else go to 4.
-    // 4. check for merchant details
-       // if merchant id is null return 404
-    //5 Get Product object from request
-    //6 confirm product name and merchant id does not exist in DB
-        //if it exists return 409 + response "conflict"
-    //7. save to database and return 200 to user
-
+    // 1. validate method is POST else return 405
+    // 2. validate if request has authorization in header else return 401
+    // 3. validate request is good else return 400
+    // 4. Call UserServiceClient to fetch all user details
+        //if fetched user details is null return 401 else move to 5
+    // 5. Is Role is CUSTOMER then return 401 else move to 6
+    // 6. Confirm if product exists
+        // if it does not return 404 else do 7
+    // 7. update stock.
+        //if successful return 200 else return 500
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         //1.
@@ -47,8 +45,8 @@ public class InsertProductHandler extends BaseHandler implements HttpHandler {
             RunUserManagement.writeHttpResponse(exchange, 405, response);
             return;
         }
+
         //2.
-        //validate if request has authorization in header
         var headers = exchange.getRequestHeaders();
         // Extract a specific header (case-insensitive)
         String authorization = headers.getFirst("Authorization");
@@ -58,7 +56,8 @@ public class InsertProductHandler extends BaseHandler implements HttpHandler {
             return;
         }
 
-        // validate insert product request
+        //3.
+
         String body = "{}";
         try (InputStream input = exchange.getRequestBody()) {
             body =  new String(input.readAllBytes(), StandardCharsets.UTF_8);
@@ -66,18 +65,18 @@ public class InsertProductHandler extends BaseHandler implements HttpHandler {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .create();
-        InsertProductRequest insertProductRequest = gson.fromJson(body, InsertProductRequest.class);
-        String validationMessage = InsertProductRequest.validate(insertProductRequest);
-        if(!validationMessage.equals("Insert product request okay!")){
+        ReduceStockRequest reduceStockRequest = gson.fromJson(body, ReduceStockRequest.class);
+        String validationMessage = ReduceStockRequest.validate(reduceStockRequest);
+        if(!validationMessage.equals("Request okay!")){
             RunUserManagement.writeHttpResponse(exchange, 400, validationMessage);
             return;
         }
 
-        //fetch User + assumed merchant details
+        // 4
         UserServiceClient userServiceClient = new UserServiceClient();
         UserMerchantPlusMessage userMerchantPlusMessage;
         try {
-           userMerchantPlusMessage = userServiceClient.getUserMerchantDetails( exchange);
+            userMerchantPlusMessage = userServiceClient.getUserMerchantDetails( exchange);
         } catch (Exception e) {
             RunUserManagement.writeHttpResponse(exchange, 500, "unknown error");
             return;
@@ -97,38 +96,42 @@ public class InsertProductHandler extends BaseHandler implements HttpHandler {
             }
         }
         UserMerchantDetails userMerchantDetails = userMerchantPlusMessage.getUserMerchantDetails();
-        if (userMerchantDetails.getMerchantId() == 0) {
+        if (userMerchantDetails.getMerchantId() == 0 || userMerchantDetails.getRole() == Role.CUSTOMER) {
             RunOrderManagement.writeHttpResponse (exchange, 403, "Forbidden: insufficient role");
             return;
         }
         // extract merchant id
-        int merchantId = userMerchantDetails.getMerchantId();
+        int merchant_id = userMerchantDetails.getMerchantId();
 
-        // create object of product
-        Product product = new Product(insertProductRequest, merchantId);
-
-        //check if product exist in database by name and merchantId
+        // Confirm whether product exist and
+        // confirm whether merchantID matches merchant_id in products table
+        Product existinProduct;
         try {
-            if(productService.getProductByNameAndMerchant(product.getName(), product.getMerchantId()) != null){
-                String response = "Duplicate entry";
-                RunOrderManagement.writeHttpResponse(exchange,409, response );
-                return;
-            }
+            existinProduct = productService.ExistingProduct(reduceStockRequest.getProductId());
         } catch (SQLException e) {
-            String response = "Unknown error";
-            RunUserManagement.writeHttpResponse(exchange, 500, response);
+            RunOrderManagement.writeHttpResponse (exchange, 500, "Unknown error");
             return;
         }
-        //insert in database
-        try {
-            Product updatedProduct = productService.insertProduct(product);
-            String jsonResponse = gson.toJson(updatedProduct);
-            RunUserManagement.writeHttpResponse(exchange, 200, jsonResponse);
-        } catch (SQLException e) {
-            String response = "Unknown error";
-            RunUserManagement.writeHttpResponse(exchange, 500, response);
+        if(existinProduct == null){
+            RunOrderManagement.writeHttpResponse (exchange, 404, "Product not found!");
+            return;
         }
+        if(merchant_id != existinProduct.getMerchantId()){
+            RunOrderManagement.writeHttpResponse (exchange, 403, "Forbidden: You are not allowed to update this product");
+            return;
+        }
+        // validate quantity to subtract is less or equal to stock available
+        if(reduceStockRequest.getQuantity() > existinProduct.getStock()){
+            RunUserManagement.writeHttpResponse(exchange, 409,
+                    "Conflict: Insufficient stock. Available = " + existinProduct.getStock());
+            return;
+        }
+        // update database
+        if(productService.reduceStock(reduceStockRequest.getProductId(), reduceStockRequest.getQuantity())){
+            RunUserManagement.writeHttpResponse(exchange, 200, "Stock updated successfully!");
+            return;
+        }
+        String response = "Unknown error";
+        RunUserManagement.writeHttpResponse(exchange, 500, response);
     }
 }
-
-

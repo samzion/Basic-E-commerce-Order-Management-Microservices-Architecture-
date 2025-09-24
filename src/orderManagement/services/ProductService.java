@@ -59,4 +59,66 @@ public class ProductService {
             return product;
         }
     }
+
+    public Product ExistingProduct(int productId) throws SQLException {
+
+        String sql = """ 
+                SELECT *
+                FROM products
+                WHERE id = ?
+                ;
+                """;
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        pStatement.setInt(1, productId);
+        ResultSet rs = pStatement.executeQuery();
+        Product product = new Product();
+        if(rs.next()){
+            System.out.println("A user with this email and password exist.");
+            product.setId( rs.getInt("id"));
+            product.setMerchantId( rs.getInt("merchant_id"));
+            product.setName(rs.getString("name"));
+            product.setCategory(rs.getString("category"));
+            product.setPrice(rs.getDouble("price"));
+            product.setStock(rs.getInt("stock"));
+            product.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            product.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            return  product;
+        }
+        return null;
+    }
+
+    public boolean reduceStock(int productId, int quantity) {
+        String sql =
+                "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?";
+
+        try ( PreparedStatement pStatement = connection.prepareStatement(sql)){
+
+            pStatement.setInt(1, quantity);   // subtract this amount
+            pStatement.setInt(2, productId);  // target product
+            pStatement.setInt(3, quantity);   // ensure enough stock
+
+            int rowsUpdated = pStatement.executeUpdate();
+            return rowsUpdated > 0; // true if stock updated successfully
+        } catch (SQLException e) {
+            System.err.println("Error updating stock: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean increaseStock(int productId, int quantity) {
+        String sql =
+                "UPDATE products SET stock = stock + ? WHERE id = ?";
+
+        try ( PreparedStatement pStatement = connection.prepareStatement(sql)){
+
+            pStatement.setInt(1, quantity);   // subtract this amount
+            pStatement.setInt(2, productId);  // target product
+
+            int rowsUpdated = pStatement.executeUpdate();
+            return rowsUpdated > 0; // true if stock updated successfully
+        } catch (SQLException e) {
+            System.err.println("Error updating stock: " + e.getMessage());
+            return false;
+        }
+    }
 }
