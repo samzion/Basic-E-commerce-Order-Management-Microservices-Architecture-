@@ -3,6 +3,8 @@ package orderManagement.services;
 import orderManagement.models.entties.Product;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProductService {
     public Connection connection;
@@ -73,7 +75,7 @@ public class ProductService {
         ResultSet rs = pStatement.executeQuery();
         Product product = new Product();
         if(rs.next()){
-            System.out.println("A user with this email and password exist.");
+            System.out.println("Product exists.");
             product.setId( rs.getInt("id"));
             product.setMerchantId( rs.getInt("merchant_id"));
             product.setName(rs.getString("name"));
@@ -120,5 +122,48 @@ public class ProductService {
             System.err.println("Error updating stock: " + e.getMessage());
             return false;
         }
+    }
+
+    public List<Product> listAllAvailProducts() throws SQLException {
+        String sql = "SELECT *  FROM products WHERE stock >0; ";
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        ResultSet rs = pStatement.executeQuery();
+        List<Product> products = new ArrayList<>();
+        while(rs.next()){
+            Product product = new Product();
+            System.out.println("Available products exist.");
+            product.setId( rs.getInt("id"));
+            product.setMerchantId( rs.getInt("merchant_id"));
+            product.setName(rs.getString("name"));
+            product.setCategory(rs.getString("category"));
+            product.setPrice(rs.getDouble("price"));
+            product.setStock(rs.getInt("stock"));
+            product.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            product.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            products.add(product);
+        }
+        return products;
+    }
+
+    public List<Product> getProductsByCategory(String category) throws SQLException {
+        String sql = "SELECT * FROM products WHERE category = ? AND stock > 0";
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        pStatement.setString(1, category);
+        ResultSet rs = pStatement.executeQuery();
+        List<Product> products = new ArrayList<>();
+        while(rs.next()){
+            Product product = new Product();
+            System.out.println("Available products exist.");
+            product.setId( rs.getInt("id"));
+            product.setMerchantId( rs.getInt("merchant_id"));
+            product.setName(rs.getString("name"));
+            product.setCategory(rs.getString("category"));
+            product.setPrice(rs.getDouble("price"));
+            product.setStock(rs.getInt("stock"));
+            product.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            product.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            products.add(product);
+        }
+        return products;
     }
 }

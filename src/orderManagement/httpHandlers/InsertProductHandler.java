@@ -12,11 +12,13 @@ import orderManagement.requests.InsertProductRequest;
 import orderManagement.services.ProductService;
 import orderManagement.services.UserServiceClient;
 import userManagement.RunUserManagement;
+import userManagement.services.UserService;
 import userManagement.utilities.LocalDateTimeAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
@@ -127,6 +129,21 @@ public class InsertProductHandler extends BaseHandler implements HttpHandler {
         } catch (SQLException e) {
             String response = "Unknown error";
             RunUserManagement.writeHttpResponse(exchange, 500, response);
+        }
+    }
+
+    public static class GetProductsByCategory extends userManagement.httpHandlers.BaseHandler implements HttpHandler {
+
+        Connection connection;
+
+        public GetProductsByCategory(UserService userService) {
+            super(userService);
+        }
+
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+
         }
     }
 }

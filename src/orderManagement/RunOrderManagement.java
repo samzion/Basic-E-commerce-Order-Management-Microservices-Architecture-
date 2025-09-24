@@ -4,9 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import orderManagement.db.migrations.MigrationRunner;
-import orderManagement.httpHandlers.IncreaseStockHandler;
-import orderManagement.httpHandlers.InsertProductHandler;
-import orderManagement.httpHandlers.ReduceStockHandler;
+import orderManagement.httpHandlers.*;
 import orderManagement.services.ProductService;
 import orderManagement.services.UserServiceClient;
 import userManagement.db.DataBaseConnection;
@@ -58,6 +56,9 @@ public class RunOrderManagement {
             server.createContext("/insert-product", new InsertProductHandler(productService));
             server.createContext("/reduce-stock", new ReduceStockHandler(productService));
             server.createContext("/increase-stock", new IncreaseStockHandler(productService));
+            server.createContext("/all-products", new ListAvailProductsHandler(productService));
+            server.createContext("/products", new GetProductsByCategoryHandler(productService));
+
 
 
             // Start the server
