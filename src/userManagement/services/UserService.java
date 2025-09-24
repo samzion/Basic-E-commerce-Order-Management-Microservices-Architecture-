@@ -1,5 +1,6 @@
 package userManagement.services;
 
+import orderManagement.models.responses.UserMerchantDetails;
 import userManagement.db.DataBaseConnection;
 import userManagement.models.Role;
 import userManagement.models.User;
@@ -210,5 +211,46 @@ public class UserService {
         statement.setInt(2, user.getId());
         statement.executeUpdate();
         System.out.println("User id " + user.getId() + "updated to " + role + "successfully!");
+    }
+
+    public UserMerchantDetails getUserMerchantDetailsByUserToken(String userToken) throws SQLException {
+        String queryLoginDetails = """ 
+                SELECT
+                     u.id AS user_id,
+                     u.firstname,
+                     u.lastname,
+                     u.email,
+                     u.address,
+                     u.gender,
+                     u.role,
+                     m.id AS merchant_id,
+                     m.business_name,
+                     m.business_address,
+                     m.phone_number
+                FROM users u
+                LEFT JOIN merchants m
+                    ON u.id = m.user_id
+                WHERE u.user_token = ?;
+                """;
+        PreparedStatement pStatement = connection.prepareStatement(queryLoginDetails);
+        pStatement.setString(1, userToken);
+        ResultSet rs = pStatement.executeQuery();
+        UserMerchantDetails userMerchantDetails = new UserMerchantDetails();
+        if(rs.next()){
+            System.out.println("A user with this email and password exist.");
+            userMerchantDetails.setUserId( rs.getInt("user_id")); ;
+            userMerchantDetails.setFirstName(rs.getString("firstname"));
+            userMerchantDetails.setLastName(rs.getString("lastname"));
+            userMerchantDetails.setAddress(rs.getString("address"));
+            userMerchantDetails.setEmail(rs.getString("email"));
+            userMerchantDetails.setGender(rs.getString("gender"));
+            userMerchantDetails.setRole(Role.valueOf(rs.getString("role")));
+            userMerchantDetails.setMerchantId(rs.getInt("merchant_id"));
+            userMerchantDetails.setBusinessName(rs.getString("business_name"));
+            userMerchantDetails.setBusinessAddress(rs.getString("business_address"));
+            userMerchantDetails.setPhoneNumber(rs.getString("phone_number"));
+            return  userMerchantDetails;
+        }
+        return null;
     }
 }

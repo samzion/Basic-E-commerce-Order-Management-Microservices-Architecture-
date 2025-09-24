@@ -7,6 +7,7 @@ import userManagement.db.DataBaseConnection;
 import userManagement.db.migrations.MigrationRunner;
 import userManagement.httpHandlers.MerchantCreationHandler;
 import userManagement.httpHandlers.UserCreationHandler;
+import userManagement.httpHandlers.UserDetailsByAuth;
 import userManagement.httpHandlers.UserLoginHandler;
 import userManagement.services.MerchantService;
 import userManagement.services.UserService;
@@ -59,6 +60,7 @@ public class RunUserManagement {
             server.createContext("/create-user", new UserCreationHandler(userService));
             server.createContext("/user-login", new UserLoginHandler(userService));
             server.createContext("/create-merchant", new MerchantCreationHandler(userService, merchantService));
+            server.createContext("/all-user-details", new UserDetailsByAuth(userService, merchantService));
 
 
             // Start the server

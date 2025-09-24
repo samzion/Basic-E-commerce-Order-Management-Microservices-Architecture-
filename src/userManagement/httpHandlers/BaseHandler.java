@@ -3,11 +3,14 @@ package userManagement.httpHandlers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
+import orderManagement.models.responses.UserMerchantDetails;
+import userManagement.RunUserManagement;
 import userManagement.models.User;
 import userManagement.services.UserService;
 import userManagement.utilities.LocalDateAdapter;
 import userManagement.utilities.LocalDateTimeAdapter;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -53,6 +56,41 @@ public class BaseHandler {
             return existingUser;
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public UserMerchantDetails getAllAuthenticatedUserDetails(HttpExchange exchange) throws IOException {
+        var headers = exchange.getRequestHeaders();
+        String authorization = headers.getFirst("Authorization");
+
+        if (authorization == null) {
+            RunUserManagement.writeHttpResponse(exchange, 400, "Missing Authorization header");
+            return null;
+        }
+
+        String[] authHeaderArray = authorization.split("/");
+        if (authHeaderArray.length != 2) {
+            RunUserManagement.writeHttpResponse(exchange, 400, "Invalid Authorization header format");
+            return null;
+        }
+
+        try {
+            String userToken = authHeaderArray[1];
+            UserMerchantDetails userMerchantDetails =
+                    this.userService.getUserMerchantDetailsByUserToken(userToken);
+
+            if (userMerchantDetails == null ||
+                    !userMerchantDetails.getEmail().equalsIgnoreCase(authHeaderArray[0])) {
+                RunUserManagement.writeHttpResponse(exchange, 404, "User details not found");
+                return null;
+            }
+
+            return userMerchantDetails;
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            RunUserManagement.writeHttpResponse(exchange, 500, "Internal error fetching details");
             return null;
         }
     }
