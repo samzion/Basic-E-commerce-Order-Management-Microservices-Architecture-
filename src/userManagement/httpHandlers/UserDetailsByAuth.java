@@ -2,7 +2,7 @@ package userManagement.httpHandlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import orderManagement.models.responses.UserMerchantDetails;
+import userManagement.models.response.UserMerchantDetails;
 import userManagement.RunUserManagement;
 import userManagement.services.MerchantService;
 import userManagement.services.UserService;
@@ -41,8 +41,9 @@ public class UserDetailsByAuth extends BaseHandler implements HttpHandler {
         }
 
         UserMerchantDetails userMerchantDetails = getAllAuthenticatedUserDetails(exchange);
-        if(userMerchantDetails == null){
-            RunUserManagement.writeHttpResponse(exchange, 404, "User details not found");
+        if(userMerchantDetails.getUserId()==0){
+            String jsonResponse = gson.toJson(userMerchantDetails);
+            RunUserManagement.writeHttpResponse(exchange, 404, jsonResponse);
             return;
         }
         String jsonResponse = gson.toJson(userMerchantDetails);

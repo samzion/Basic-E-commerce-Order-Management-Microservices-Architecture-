@@ -3,7 +3,7 @@ package userManagement.httpHandlers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
-import orderManagement.models.responses.UserMerchantDetails;
+import userManagement.models.response.UserMerchantDetails;
 import userManagement.RunUserManagement;
 import userManagement.models.User;
 import userManagement.services.UserService;
@@ -80,10 +80,10 @@ public class BaseHandler {
             UserMerchantDetails userMerchantDetails =
                     this.userService.getUserMerchantDetailsByUserToken(userToken);
 
-            if (userMerchantDetails == null ||
+            if (userMerchantDetails.getUserId() == 0 ||
                     !userMerchantDetails.getEmail().equalsIgnoreCase(authHeaderArray[0])) {
-                RunUserManagement.writeHttpResponse(exchange, 404, "User details not found");
-                return null;
+                //RunUserManagement.writeHttpResponse(exchange, 404, "User details not found");
+                return userMerchantDetails;
             }
 
             return userMerchantDetails;

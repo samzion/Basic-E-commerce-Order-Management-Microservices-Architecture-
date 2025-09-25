@@ -1,6 +1,6 @@
 package userManagement.services;
 
-import orderManagement.models.responses.UserMerchantDetails;
+import userManagement.models.response.UserMerchantDetails;
 import userManagement.db.DataBaseConnection;
 import userManagement.models.Role;
 import userManagement.models.User;
@@ -235,7 +235,7 @@ public class UserService {
         PreparedStatement pStatement = connection.prepareStatement(queryLoginDetails);
         pStatement.setString(1, userToken);
         ResultSet rs = pStatement.executeQuery();
-        UserMerchantDetails userMerchantDetails = new UserMerchantDetails();
+        UserMerchantDetails userMerchantDetails = new userManagement.models.response.UserMerchantDetails();
         if(rs.next()){
             System.out.println("A user with this email and password exist.");
             userMerchantDetails.setUserId( rs.getInt("user_id")); ;
@@ -251,6 +251,6 @@ public class UserService {
             userMerchantDetails.setPhoneNumber(rs.getString("phone_number"));
             return  userMerchantDetails;
         }
-        return null;
+        return userMerchantDetails;
     }
 }

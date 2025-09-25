@@ -11,6 +11,8 @@ public class MigrationRunner {
     public MigrationRunner() {
         migrations = new ArrayList<>();
         migrations.add(new ProductMigration());
+        migrations.add(new CartMigration());
+        migrations.add(new CartItemMigration());
         migrations.add(new OrderMigration());
         migrations.add(new OrderItemMigration());
         migrations.add(new ShipmentMigration());

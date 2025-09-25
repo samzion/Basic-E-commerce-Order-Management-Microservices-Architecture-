@@ -1,4 +1,4 @@
-package orderManagement.requests;
+package orderManagement.models.requests;
 
 public class ReduceStockRequest {
 

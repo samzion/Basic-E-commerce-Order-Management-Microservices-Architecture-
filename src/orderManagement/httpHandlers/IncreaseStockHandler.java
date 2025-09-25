@@ -8,7 +8,7 @@ import orderManagement.RunOrderManagement;
 import orderManagement.models.entties.Product;
 import orderManagement.models.responses.UserMerchantDetails;
 import orderManagement.models.responses.UserMerchantPlusMessage;
-import orderManagement.requests.IncreaseStockRequest;
+import orderManagement.models.requests.IncreaseStockRequest;
 import orderManagement.services.ProductService;
 import orderManagement.services.UserServiceClient;
 import userManagement.RunUserManagement;

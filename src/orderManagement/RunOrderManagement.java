@@ -5,6 +5,8 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import orderManagement.db.migrations.MigrationRunner;
 import orderManagement.httpHandlers.*;
+import orderManagement.services.CartItemService;
+import orderManagement.services.CartService;
 import orderManagement.services.ProductService;
 import orderManagement.services.UserServiceClient;
 import userManagement.db.DataBaseConnection;
@@ -48,6 +50,8 @@ public class RunOrderManagement {
             HttpServer server = HttpServer.create(new InetSocketAddress(8002), 0);
 
            ProductService productService =  new ProductService(connection);
+            CartService cartService = new CartService(connection);
+            CartItemService cartItemService = new CartItemService(connection);
 
 
             // Create a context for a specific path and set the handler
@@ -58,6 +62,7 @@ public class RunOrderManagement {
             server.createContext("/increase-stock", new IncreaseStockHandler(productService));
             server.createContext("/all-products", new ListAvailProductsHandler(productService));
             server.createContext("/products", new GetProductsByFilterHandler(productService));
+            server.createContext("/add-to-cart", new AddItemToCartHandler(productService, cartService, cartItemService));
 
 
 
@@ -100,7 +105,6 @@ public class RunOrderManagement {
             os.close();
         }
     }
-
     public static void writeHttpResponse(HttpExchange exchange, int statusCode, String responseMessage) throws IOException {
         // Handle the request
         exchange.sendResponseHeaders(statusCode, responseMessage.length());

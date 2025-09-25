@@ -223,4 +223,34 @@ public class ProductService {
            return null;
         }
     }
+
+
+    public Product sufficientStockProduct(int productId, int quantity) throws SQLException {
+
+        String sql = """ 
+                SELECT *
+                FROM products
+                WHERE id = ? AND
+                    quantity >= ?
+                ;
+                """;
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        pStatement.setInt(1, productId);
+        pStatement.setInt(2, quantity);
+        ResultSet rs = pStatement.executeQuery();
+        Product product = new Product();
+        if (rs.next()) {
+            System.out.println("Product exists.");
+            product.setId(rs.getInt("id"));
+            product.setMerchantId(rs.getInt("merchant_id"));
+            product.setName(rs.getString("name"));
+            product.setCategory(rs.getString("category"));
+            product.setPrice(rs.getDouble("price"));
+            product.setStock(rs.getInt("stock"));
+            product.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            product.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            return product;
+        }
+        return null;
+    }
 }

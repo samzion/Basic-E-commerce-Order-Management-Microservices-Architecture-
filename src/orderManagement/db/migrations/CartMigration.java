@@ -13,7 +13,7 @@ public class CartMigration implements IMigration {
                 CREATE TABLE IF NOT EXISTS carts (
                     id      SERIAL PRIMARY KEY,
                     user_id      INT NOT NULL,
-                    status       VARCHAR(20) DEFAULT 'active', -- active, checked_out, abandoned
+                    status       VARCHAR(20) DEFAULT 'OPEN', -- OPEN, CHECKED_OUT
                     created_on   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_on   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                           )

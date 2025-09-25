@@ -56,7 +56,7 @@ public class UserServiceClient {
         UserServiceClient userClient = new UserServiceClient();
         UserMerchantDetails validation = userClient.validateUser(authorization);
 
-        if (validation == null) {
+        if (validation.getUserId() == 0) {
             String errorMessage = "Unauthorized: invalid credentials";
             userMerchantPlusMessage.setErrorMessage(errorMessage);
             userMerchantPlusMessage.setUserMerchantDetails(null);

@@ -1,7 +1,7 @@
 package orderManagement.models.entties;
 
 import com.google.gson.Gson;
-import orderManagement.requests.InsertProductRequest;
+import orderManagement.models.requests.InsertProductRequest;
 
 import java.time.LocalDateTime;
 
