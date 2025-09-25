@@ -166,4 +166,61 @@ public class ProductService {
         }
         return products;
     }
+
+    public List<Product> getProductsByFilters(String category, Integer merchantId, String name, 
+                                              Double minPrice, Double maxPrice, Boolean inStock) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT id, name, category, merchant_id, stock, price " +
+                        "FROM products WHERE 1=1 "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        if (category != null && !category.isEmpty()) {
+            sql.append("AND category = ? ");
+            params.add(category);
+        }
+        if (merchantId != null) {
+            sql.append("AND merchant_id = ? ");
+            params.add(merchantId);
+        }
+        if (name != null && !name.isEmpty()) {
+            sql.append("AND LOWER(name) LIKE ? ");
+            params.add("%" + name.toLowerCase() + "%");
+        }
+        if (minPrice != null) {
+            sql.append("AND price >= ? ");
+            params.add(minPrice);
+        }
+        if (maxPrice != null) {
+            sql.append("AND price <= ? ");
+            params.add(maxPrice);
+        }
+        if (inStock != null && inStock) {
+            sql.append("AND stock > 0 ");
+        }
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            List<Product> products = new ArrayList<>();
+            while (rs.next()) {
+                Product product = new Product();
+                product.setId(rs.getInt("id"));
+                product.setName(rs.getString("name"));
+                product.setCategory(rs.getString("category"));
+                product.setMerchantId(rs.getInt("merchant_id"));
+                product.setStock(rs.getInt("stock"));
+                product.setPrice(rs.getDouble("price"));
+                products.add(product);
+            }
+            return products;
+        } catch (SQLException e) {
+            System.out.println("Unknown error!");
+           return null;
+        }
+    }
 }

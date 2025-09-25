@@ -57,7 +57,7 @@ public class RunOrderManagement {
             server.createContext("/reduce-stock", new ReduceStockHandler(productService));
             server.createContext("/increase-stock", new IncreaseStockHandler(productService));
             server.createContext("/all-products", new ListAvailProductsHandler(productService));
-            server.createContext("/products", new GetProductsByCategoryHandler(productService));
+            server.createContext("/products", new GetProductsByFilterHandler(productService));
 
 
 
