@@ -13,6 +13,7 @@ public class AccountMigration implements IMigration {
               CREATE TABLE IF NOT EXISTS accounts (
               id SERIAL PRIMARY KEY,
               user_id INT NOT NULL,
+              merchant_id INT,
               account_number VARCHAR(20) UNIQUE NOT NULL,
               account_name VARCHAR(100) NOT NULL,
               bank VARCHAR(100) DEFAULT 'default',

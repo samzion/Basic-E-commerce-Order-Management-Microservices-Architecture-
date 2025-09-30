@@ -10,6 +10,7 @@ import java.util.List;
 public class Account {
     private int id;
     private int userID;
+    private int merchantID;
     private String accountNumber;
     private String accountName;
     private double balance;
@@ -150,12 +151,20 @@ public class Account {
         double sumCredit=0;
 
         for(Transaction transaction: transactions){
-            if(transaction.transactionType == TransactionType.DEBIT){
+            if(transaction.getTransactionType() == TransactionType.DEBIT){
                 sumDebit += transaction.amount;
             } else {
                 sumCredit+=transaction.amount;
             }
         }
         return accountNumber + "        " + bank + "         " +  sumCredit + "             " + sumDebit + "                    " + getBalance();
+    }
+
+    public int getMerchantID() {
+        return merchantID;
+    }
+
+    public void setMerchantID(int merchantID) {
+        this.merchantID = merchantID;
     }
 }

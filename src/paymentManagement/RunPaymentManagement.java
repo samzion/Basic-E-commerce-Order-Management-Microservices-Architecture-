@@ -3,8 +3,12 @@ package paymentManagement;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import paymentManagement.db.DataBaseConnection;
 import paymentManagement.db.migrations.MigrationRunner;
-import userManagement.db.DataBaseConnection;
+import paymentManagement.httpHandlers.AccountCreationHandler;
+import paymentManagement.services.AccountService;
+import paymentManagement.services.TransactionService;
+import paymentManagement.services.UserServiceClient;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,10 +30,17 @@ public class RunPaymentManagement {
         String user = props.getProperty("dbUser");
         String password = props.getProperty("dbPassword");
         String driver = props.getProperty("dbDriver");
+        String getMerchantUrl = props.getProperty("getMerchantUrl");
+        String getUserByAuthorisationUrl = props.getProperty("getUserByAuthorisationUrl");
+        String ecommerceAdminAccount = props.getProperty("ecommerceAdminAccount");
+        String paymentServiceAdminAccount = props.getProperty("paymentServiceAdminAccount");
+
 
 
         // Initialize once
         DataBaseConnection.initialize(url, user, password, driver);
+        UserServiceClient.initialize(getMerchantUrl,getUserByAuthorisationUrl);
+        AccountService.initialize(ecommerceAdminAccount, paymentServiceAdminAccount);
 
         // Now you can call getConnection without arguments
         Connection connection = DataBaseConnection.getConnection();
@@ -42,6 +53,12 @@ public class RunPaymentManagement {
             // Create an HttpServer instance
             HttpServer server = HttpServer.create(new InetSocketAddress(8001), 0);
 
+            AccountService accountService = new AccountService();
+            TransactionService transactionService =  new TransactionService();
+
+            // Create a context for a specific path and set the handler
+            server.createContext("/", new MyHandler());
+            server.createContext("/create-account", new AccountCreationHandler(accountService, transactionService));
 
             // Start the server
             server.setExecutor(null); // Use the default executor
@@ -70,7 +87,7 @@ public class RunPaymentManagement {
             }
             // Handle the request
 
-            String response = "Hello, this is a simple HTTP server response!";
+            String response = "Hello, Payment Mgt. Server response!";
             exchange.sendResponseHeaders(200, response.length());
             OutputStream os = exchange.getResponseBody();
             os.write(response.getBytes());
