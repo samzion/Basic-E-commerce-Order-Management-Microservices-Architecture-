@@ -116,6 +116,36 @@ public class AccountService {
         return accounts;
     }
 
+    public Account getAccount(int merchantId) throws SQLException {
+        String query;
+        PreparedStatement statement;
+        // Decide which column to filter on
+            query = """
+                SELECT *
+                FROM accounts
+                WHERE merchant_id = ?
+                LIMIT 1;
+                """;
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, merchantId);
+        ResultSet rs = statement.executeQuery();
+        Account account = new Account();
+
+        if (rs.next()) {
+            account.setId(rs.getInt("id"));
+            account.setUserID(rs.getInt("user_id"));
+            account.setUserID(rs.getInt("merchant_id"));
+            account.setAccountNumber(rs.getString("account_number"));
+            account.setAccountName(rs.getString("account_name"));
+            account.setBank(rs.getString("bank"));
+            account.setBalance(rs.getInt("balance"));
+            account.setCreatedON(rs.getTimestamp("created_on").toLocalDateTime());
+            account.setUpdatedON(rs.getTimestamp("updated_on").toLocalDateTime());
+        }
+
+        return account;
+    }
+
 
     public Account getAccountDetails(String accountNumber) throws SQLException {
         String queryLoginDetails = "SELECT * FROM accounts WHERE account_number = ?";

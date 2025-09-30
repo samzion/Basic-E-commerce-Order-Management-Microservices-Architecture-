@@ -63,6 +63,7 @@ public class RunOrderManagement {
             server.createContext("/all-products", new ListAvailProductsHandler(productService));
             server.createContext("/products", new GetProductsByFilterHandler(productService));
             server.createContext("/add-to-cart", new AddItemToCartHandler(productService, cartService, cartItemService));
+            server.createContext("/pay-for-this-item", new PayForItemtHandler(productService, cartService, cartItemService));
 
 
 

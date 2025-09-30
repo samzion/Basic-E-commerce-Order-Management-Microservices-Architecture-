@@ -7,9 +7,8 @@ import com.sun.net.httpserver.HttpHandler;
 import userManagement.RunUserManagement;
 import userManagement.models.Merchant;
 import userManagement.models.Role;
-import userManagement.models.User;
 import userManagement.models.request.MerchantCreationRequest;
-import userManagement.models.request.UserCreationRequest;
+import userManagement.models.response.UserMerchantDetails;
 import userManagement.services.MerchantService;
 import userManagement.services.UserService;
 import userManagement.utilities.LocalDateTimeAdapter;
@@ -52,20 +51,21 @@ public class MerchantCreationHandler extends BaseHandler implements HttpHandler 
         }
 
         //validate if the request sender is a registered user
-        User authenticatedUser = this.getAuthenticatedUser(exchange);
-        if(authenticatedUser == null) {
+        UserMerchantDetails userMerchantDetails = this.getAllAuthenticatedUserDetails(exchange);
+        if(userMerchantDetails.getUserId() == 0) {
             RunUserManagement.writeHttpResponse(exchange, 401, "Unauthorized!");
             return;
         }
-        if(authenticatedUser.getRole() == Role.MERCHANT) {
-            RunUserManagement.writeHttpResponse(exchange, 409, "You are already an existing merchant");
+        if(userMerchantDetails.getRole() == Role.MERCHANT
+                && userMerchantDetails.getBusinessName().equalsIgnoreCase(merchantCreationRequest.getBusinessName())) {
+            RunUserManagement.writeHttpResponse(exchange, 409, "You are already an existing merchant with this business name");
             return;
         }
         try{
-            int user_id = authenticatedUser.getId();
+            int user_id = userMerchantDetails.getUserId();
             Merchant newCreatedMerchant =  new Merchant(merchantCreationRequest, user_id);
             merchantService.createMerchant(newCreatedMerchant);
-            userService.updateRole(authenticatedUser, Role.MERCHANT);
+            userService.updateRole(userMerchantDetails, Role.MERCHANT);
             String jsonResponse = gson.toJson(newCreatedMerchant);
             RunUserManagement.writeHttpResponse(exchange, 200, jsonResponse);
 

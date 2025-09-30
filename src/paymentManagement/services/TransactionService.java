@@ -29,11 +29,11 @@ public class TransactionService {
 
         String query = """
                         INSERT INTO transactions
-                            (account_number, amount, transaction_type,  balance)
+                            (account_number, amount, transaction_type,  balance_on_source)
                             values (?, ?, ?, ?)
                        """;
         PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, sourceAccount.getId());
+        statement.setString(1, sourceAccount.getAccountNumber());
         statement.setDouble(2, amount);
         statement.setString(3, transactionType.toString());
         statement.setDouble(4, sourceAccount.getBalance());
@@ -42,24 +42,24 @@ public class TransactionService {
         return true;
     }
 
-    public boolean createTransactionForTransfer(Account souceaccount, Account destinationAccount, double amount, TransactionType transactionType) throws SQLException {
-        boolean flag = false;
-
-        String query = """
-                        INSERT INTO transactions
-                            (from_account, to_account, amount, transaction_type,  balance)
-                            values (?, ?, ?, ?, ?)
-                       """;
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setInt(1, souceaccount.getId());
-        statement.setInt(2, destinationAccount.getId());
-        statement.setDouble(3, amount);
-        statement.setString(4, transactionType.toString());
-        statement.setDouble(5, destinationAccount.getBalance());
-        statement.executeUpdate();
-        System.out.println("Transaction successful!");
-        return true;
-    }
+//    public boolean createTransactionForTransfer(Account souceaccount, Account destinationAccount, double amount, TransactionType transactionType) throws SQLException {
+//        boolean flag = false;
+//
+//        String query = """
+//                        INSERT INTO transactions
+//                            (from_account, to_account, amount, transaction_type,  balance)
+//                            values (?, ?, ?, ?, ?)
+//                       """;
+//        PreparedStatement statement = connection.prepareStatement(query);
+//        statement.setInt(1, souceaccount.getId());
+//        statement.setInt(2, destinationAccount.getId());
+//        statement.setDouble(3, amount);
+//        statement.setString(4, transactionType.toString());
+//        statement.setDouble(5, destinationAccount.getBalance());
+//        statement.executeUpdate();
+//        System.out.println("Transaction successful!");
+//        return true;
+//    }
 
     public List<Transaction> listTransactions(Account account1) throws SQLException {
         String query = """

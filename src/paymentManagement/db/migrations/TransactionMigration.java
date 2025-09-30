@@ -12,7 +12,7 @@ public class TransactionMigration implements IMigration {
       String sql = """ 
                   CREATE TABLE IF NOT EXISTS transactions (
                     id SERIAL PRIMARY KEY,
-                    account INT NOT NULL,
+                    account_number VARCHAR(20) NOT NULL,
                     amount DECIMAL(12,2) NOT NULL,
                     transaction_type VARCHAR(20),           -- DEBIT, CREDIT, TRANSFER
                     balance_on_source  DECIMAL(12,2) NOT NULL,

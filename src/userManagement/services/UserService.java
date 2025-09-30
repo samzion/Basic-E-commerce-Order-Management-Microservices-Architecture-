@@ -180,6 +180,7 @@ public class UserService {
         return user;
     }
 
+
     public boolean verifyUserIsMerchant(String userToken) throws SQLException {
         String queryLoginDetails = "SELECT * FROM users WHERE user_token = ? AND role = ?";
         PreparedStatement pStatement = connection.prepareStatement(queryLoginDetails);
@@ -198,7 +199,7 @@ public class UserService {
     }
 
 
-    public void updateRole(User user, Role role) throws SQLException {
+    public void updateRole(UserMerchantDetails userMerchantDetails, Role role) throws SQLException {
         String query = """
                         UPDATE users
                         SET role = ?,
@@ -208,9 +209,9 @@ public class UserService {
 
         PreparedStatement statement = connection.prepareStatement(query);
         statement.setString(1, String.valueOf(role));
-        statement.setInt(2, user.getId());
+        statement.setInt(2, userMerchantDetails.getUserId());
         statement.executeUpdate();
-        System.out.println("User id " + user.getId() + "updated to " + role + "successfully!");
+        System.out.println("User id " + userMerchantDetails.getUserId() + "updated to " + role + "successfully!");
     }
 
     public UserMerchantDetails getUserMerchantDetailsByUserToken(String userToken) throws SQLException {

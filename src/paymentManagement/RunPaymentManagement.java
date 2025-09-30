@@ -6,6 +6,8 @@ import com.sun.net.httpserver.HttpServer;
 import paymentManagement.db.DataBaseConnection;
 import paymentManagement.db.migrations.MigrationRunner;
 import paymentManagement.httpHandlers.AccountCreationHandler;
+import paymentManagement.httpHandlers.PayNowHandler;
+import paymentManagement.models.bank.*;
 import paymentManagement.services.AccountService;
 import paymentManagement.services.TransactionService;
 import paymentManagement.services.UserServiceClient;
@@ -16,6 +18,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class RunPaymentManagement {
@@ -41,6 +45,8 @@ public class RunPaymentManagement {
         DataBaseConnection.initialize(url, user, password, driver);
         UserServiceClient.initialize(getMerchantUrl,getUserByAuthorisationUrl);
         AccountService.initialize(ecommerceAdminAccount, paymentServiceAdminAccount);
+        PayNowHandler.initialize(paymentServiceAdminAccount, ecommerceAdminAccount);
+
 
         // Now you can call getConnection without arguments
         Connection connection = DataBaseConnection.getConnection();
@@ -56,9 +62,20 @@ public class RunPaymentManagement {
             AccountService accountService = new AccountService();
             TransactionService transactionService =  new TransactionService();
 
+
+            DefaultTransfer genericTransfer = new DefaultTransfer(accountService);
+            GTBTransfer gtbTransfer = new GTBTransfer(accountService);
+            UBATransfer ubaTransfer = new UBATransfer(accountService);
+            List<ITransfer> genericTransfers = new ArrayList<>();
+            genericTransfers.add(gtbTransfer);
+            genericTransfers.add(ubaTransfer);
+            genericTransfers.add(genericTransfer);
+            TransferProcessor transferProcessor = new TransferProcessor(accountService, genericTransfers);
+
             // Create a context for a specific path and set the handler
             server.createContext("/", new MyHandler());
             server.createContext("/create-account", new AccountCreationHandler(accountService, transactionService));
+            server.createContext("/pay-now", new PayNowHandler(transferProcessor, accountService));
 
             // Start the server
             server.setExecutor(null); // Use the default executor
