@@ -1,11 +1,14 @@
 package orderManagement.services;
 
 import orderManagement.models.entties.CartItem;
+import orderManagement.models.entties.MerchantPayment;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CartItemService {
     Connection connection;
@@ -52,4 +55,27 @@ public class CartItemService {
             return false;
         }
     }
+
+    public List<MerchantPayment> getMerchantPayments( int cartId) throws SQLException {
+        String query = """
+                  SELECT p.merchant_id, SUM(ci.quantity * p.price) AS subtotal
+                      FROM cart_items ci
+                      JOIN products p ON ci.product_id = p.id
+                      WHERE ci.cart_id = ?
+                      GROUP BY p.merchant_id
+                  """;
+        PreparedStatement stmt = connection.prepareStatement(query);
+        stmt.setInt(1, cartId);
+        ResultSet rs = stmt.executeQuery();
+
+        List<MerchantPayment> merchantPayments = new ArrayList<>();
+        while (rs.next()) {
+            MerchantPayment mp = new MerchantPayment();
+            mp.setMerchantId(rs.getInt("merchant_id"));
+            mp.setAmount(rs.getDouble("subtotal"));
+            merchantPayments.add(mp);
+        }
+        return merchantPayments;
+    }
+
 }

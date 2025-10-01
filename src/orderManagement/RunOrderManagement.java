@@ -5,10 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import orderManagement.db.migrations.MigrationRunner;
 import orderManagement.httpHandlers.*;
-import orderManagement.services.CartItemService;
-import orderManagement.services.CartService;
-import orderManagement.services.ProductService;
-import orderManagement.services.UserServiceClient;
+import orderManagement.services.*;
 import userManagement.db.DataBaseConnection;
 
 import java.io.FileInputStream;
@@ -33,11 +30,13 @@ public class RunOrderManagement {
         String driver = props.getProperty("dbDriver");
         String getMerchantUrl = props.getProperty("getMerchantUrl");
         String getUserByAuthorisationUrl = props.getProperty("getUserByAuthorisationUrl");
+        String paymentClientUrl = props.getProperty("paymentClientUrl");
 
 
         // Initialize once
         DataBaseConnection.initialize(url, user, password, driver);
         UserServiceClient.initialize(getMerchantUrl, getUserByAuthorisationUrl);
+        PaymentServiceClient.initialize(paymentClientUrl);
 
         // Now you can call getConnection without arguments
         Connection connection = DataBaseConnection.getConnection();
@@ -49,9 +48,11 @@ public class RunOrderManagement {
             // Create an HttpServer instance
             HttpServer server = HttpServer.create(new InetSocketAddress(8002), 0);
 
-           ProductService productService =  new ProductService(connection);
+            ProductService productService =  new ProductService(connection);
             CartService cartService = new CartService(connection);
             CartItemService cartItemService = new CartItemService(connection);
+            OrderService orderService = new OrderService(connection);
+            OrderItemService orderItemService = new OrderItemService(connection);
 
 
             // Create a context for a specific path and set the handler
@@ -63,7 +64,8 @@ public class RunOrderManagement {
             server.createContext("/all-products", new ListAvailProductsHandler(productService));
             server.createContext("/products", new GetProductsByFilterHandler(productService));
             server.createContext("/add-to-cart", new AddItemToCartHandler(productService, cartService, cartItemService));
-            server.createContext("/pay-for-this-item", new PayForItemtHandler(productService, cartService, cartItemService));
+            server.createContext("/pay-for-this-item", new PayForItemtHandler(productService, orderService, orderItemService));
+            server.createContext("/check-out", new CheckOutHandler(productService, orderService, orderItemService, cartService, cartItemService));
 
 
 

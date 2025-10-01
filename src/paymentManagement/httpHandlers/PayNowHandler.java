@@ -9,6 +9,7 @@ import paymentManagement.models.entities.Account;
 import paymentManagement.models.entities.MerchantPayment;
 import paymentManagement.models.requests.PayNowRequest;
 import paymentManagement.models.response.AccountOperationResponse;
+import paymentManagement.models.response.PaymentResponse;
 import paymentManagement.models.response.UserMerchantDetails;
 import paymentManagement.models.response.UserMerchantPlusMessage;
 import paymentManagement.services.AccountService;
@@ -83,15 +84,22 @@ public class PayNowHandler extends BaseHandler implements HttpHandler {
         }
         // get customer account number
         List<Account> customerAccounts = null;
+        PaymentResponse paymentResponse =  new PaymentResponse();
         try {
             customerAccounts = accountService.listAccount(userMerchantDetails);
         } catch (SQLException e) {
-            RunPaymentManagement.writeHttpResponse(exchange, 500, "Unknown error from server");
+            paymentResponse.setStatus(500);
+            paymentResponse.setMessage("Unknown error from server");
+            String jsonResponse = gson.toJson(paymentResponse);
+            RunPaymentManagement.writeHttpResponse(exchange, 500, jsonResponse);
             return;
         }
         assert customerAccounts != null;
         if(customerAccounts.isEmpty()){
-            RunPaymentManagement.writeHttpResponse(exchange, 404, "No accounts found for customer");
+            paymentResponse.setStatus(404);
+            paymentResponse.setMessage("No accounts found for customer");
+            String jsonResponse = gson.toJson(paymentResponse);
+            RunPaymentManagement.writeHttpResponse(exchange, 404, jsonResponse);
             return;
         }
         AccountOperationResponse transferFromCustomerResponse = null;
@@ -103,18 +111,25 @@ public class PayNowHandler extends BaseHandler implements HttpHandler {
                transferFromCustomerResponse = transferProcessor.transfer(userMerchantDetails, account.getAccountNumber(),
                         paymentMSAdminAcccountNumber, payNowRequest.getTotalAmount());
             } catch (SQLException | ClassNotFoundException e) {
-                RunPaymentManagement.writeHttpResponse(exchange, 500, "Unknown error from server");
+                paymentResponse.setStatus(500);
+                paymentResponse.setMessage("Unknown error from server");
+                String jsonResponse = gson.toJson(paymentResponse);
+                RunPaymentManagement.writeHttpResponse(exchange, 500, jsonResponse);
                 return;
             }
             break;
         }
 
         if(transferFromCustomerResponse == null){
-            RunPaymentManagement.writeHttpResponse(exchange, 402, "Insufficient balance in customer account");
+            paymentResponse.setStatus(402);
+            paymentResponse.setMessage("Insufficient balance in customer account");
+            String jsonResponse = gson.toJson(paymentResponse);
+            RunPaymentManagement.writeHttpResponse(exchange, 402, jsonResponse);
             return;
         }
         if(transferFromCustomerResponse.getStatusCode() != 200){
-            RunPaymentManagement.writeHttpResponse(exchange, transferFromCustomerResponse.getStatusCode(), transferFromCustomerResponse.getMessage());
+            String jsonResponse = gson.toJson(transferFromCustomerResponse);
+            RunPaymentManagement.writeHttpResponse(exchange, transferFromCustomerResponse.getStatusCode(), jsonResponse);
             return;
         }
 
@@ -128,9 +143,15 @@ public class PayNowHandler extends BaseHandler implements HttpHandler {
                         , ecommerceAdminAccountNumber, merchantPayment.getAmount()*0.025);
             }
         } catch (Exception e) {
-            RunPaymentManagement.writeHttpResponse(exchange, 500, "Unknown error from server");
+            paymentResponse.setStatus(500);
+            paymentResponse.setMessage("Unknown error from server");
+            String jsonResponse = gson.toJson(paymentResponse);
+            RunPaymentManagement.writeHttpResponse(exchange, 500, jsonResponse);
             return;
         }
-        RunPaymentManagement.writeHttpResponse(exchange, 200, "Payment successful!");
+        paymentResponse.setStatus(200);
+        paymentResponse.setMessage("Payment successful!");
+        String jsonResponse = gson.toJson(paymentResponse);
+        RunPaymentManagement.writeHttpResponse(exchange, 200, jsonResponse);
     }
 }
