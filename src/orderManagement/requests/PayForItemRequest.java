@@ -3,6 +3,15 @@ package orderManagement.requests;
 public class PayForItemRequest {
     private int productId;
     private int quantity;
+    private boolean payLater;
+
+    public boolean isPayLater() {
+        return payLater;
+    }
+
+    public void setPayLater(boolean payLater) {
+        this.payLater = payLater;
+    }
 
     public int getProductId() {
         return productId;

@@ -23,7 +23,7 @@ public class PaymentServiceClient {
     public static void initialize(String payUrl){
         paymentClientUrl = payUrl;
     }
-
+//TODO: only focus on base URL that can change. resource hardly changes. so edit not to pick the entire service resource from configuration.
     public PaymentResponse makePayment(String auth, PaymentRequest paymentRequest) throws Exception {
         // Convert the payload object to JSON
         String jsonPayload = gson.toJson(paymentRequest); // you can use Jackson or Gson

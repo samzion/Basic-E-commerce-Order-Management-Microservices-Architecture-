@@ -2,6 +2,15 @@ package orderManagement.models.requests;
 
 public class CheckOutRequest {
     private  int cartId;
+    private boolean payLater;
+
+    public boolean isPayLater() {
+        return payLater;
+    }
+
+    public void setPayLater(boolean payLater) {
+        this.payLater = payLater;
+    }
 
     public int getCartId() {
         return cartId;

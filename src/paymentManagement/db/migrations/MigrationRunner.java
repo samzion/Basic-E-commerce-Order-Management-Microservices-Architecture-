@@ -12,6 +12,7 @@ public class MigrationRunner {
         migrations = new ArrayList<>();
         migrations.add(new AccountMigration());
         migrations.add(new TransactionMigration());
+        migrations.add(new LoanMigration());
     }
 
     public void runMigrations(Connection conn) throws SQLException {

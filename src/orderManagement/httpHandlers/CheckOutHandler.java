@@ -118,6 +118,10 @@ public class CheckOutHandler extends BaseHandler implements HttpHandler {
             RunOrderManagement.writeHttpResponse(exchange, 404, "Cart does not exit");
             return;
         }
+        if(!cart.getStatus().equals("OPEN")){
+            RunOrderManagement.writeHttpResponse(exchange, 404, "This cart is no longer active. Enter an active cart.");
+            return;
+        }
         // After here it means we have an active cart id that matches userId
         //Now checkout of cart and create orderItems and new order
 
@@ -154,6 +158,7 @@ public class CheckOutHandler extends BaseHandler implements HttpHandler {
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setTotalAmount(totalAmount);
         paymentRequest.setMerchantPayments(merchantPayments);
+        paymentRequest.setPaylater(checkOutRequest.isPayLater());
 
         //call payment service client
         PaymentServiceClient paymentServiceClient = new PaymentServiceClient();
@@ -172,6 +177,7 @@ public class CheckOutHandler extends BaseHandler implements HttpHandler {
         try {
             orderItemService.confirmOrderItems(order.getId());
             orderService.updateOrder(order);
+            cartItemService.reduceStockPerProduct(cart.getId());
             RunOrderManagement.writeHttpResponse(exchange, paymentResponse.getStatus(), paymentResponse.getMessage());
         } catch (SQLException ex) {
             RunOrderManagement.writeHttpResponse(exchange, 500, "Unknown error! Request for refund if debited");

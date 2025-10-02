@@ -78,4 +78,56 @@ public class CartItemService {
         return merchantPayments;
     }
 
+    public List<CartItem> getCartItems(int cartId) throws SQLException {
+        String query = """
+        SELECT id, cart_id, product_id, quantity
+        FROM cart_items
+        WHERE cart_id = ?
+    """;
+
+        List<CartItem> items = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, cartId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CartItem item = new CartItem();
+                    item.setId(rs.getInt("id"));
+                    item.setCartId(rs.getInt("cart_id"));
+                    item.setProductId(rs.getInt("product_id"));
+                    item.setQuantity(rs.getInt("quantity"));
+                    items.add(item);
+                }
+            }
+        }
+        return items;
+    }
+
+    public boolean reduceStockPerProduct(int cartId) {
+
+        String updateStockSQL = """
+                    UPDATE products
+                    SET stock = stock - ?
+                    WHERE id = ? AND stock >= ?
+                """;
+        try (PreparedStatement ps = connection.prepareStatement(updateStockSQL)) {
+            List<CartItem> items = getCartItems(cartId);
+            // Loop through cart items again or reuse data structure
+            for (CartItem ci : items) {
+                ps.setInt(1, ci.getQuantity());
+                ps.setInt(2, ci.getProductId());
+                ps.setInt(3, ci.getQuantity());
+
+                int rows = ps.executeUpdate();
+                if (rows == 0) {
+                    System.out.println("Insufficient stock when deducting product " + ci.getProductId());
+                } else {
+                    System.out.println("✅ Deducted " + ci.getQuantity() + " from product " + ci.getProductId());
+                }
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

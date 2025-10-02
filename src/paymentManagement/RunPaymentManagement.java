@@ -6,9 +6,10 @@ import com.sun.net.httpserver.HttpServer;
 import paymentManagement.db.DataBaseConnection;
 import paymentManagement.db.migrations.MigrationRunner;
 import paymentManagement.httpHandlers.AccountCreationHandler;
-import paymentManagement.httpHandlers.PayNowHandler;
+import paymentManagement.httpHandlers.PayHandler;
 import paymentManagement.models.bank.*;
 import paymentManagement.services.AccountService;
+import paymentManagement.services.LoanService;
 import paymentManagement.services.TransactionService;
 import paymentManagement.services.UserServiceClient;
 
@@ -45,7 +46,7 @@ public class RunPaymentManagement {
         DataBaseConnection.initialize(url, user, password, driver);
         UserServiceClient.initialize(getMerchantUrl,getUserByAuthorisationUrl);
         AccountService.initialize(ecommerceAdminAccount, paymentServiceAdminAccount);
-        PayNowHandler.initialize(paymentServiceAdminAccount, ecommerceAdminAccount);
+        PayHandler.initialize(paymentServiceAdminAccount, ecommerceAdminAccount);
 
 
         // Now you can call getConnection without arguments
@@ -61,6 +62,7 @@ public class RunPaymentManagement {
 
             AccountService accountService = new AccountService();
             TransactionService transactionService =  new TransactionService();
+            LoanService loanService = new LoanService();
 
 
             DefaultTransfer genericTransfer = new DefaultTransfer(accountService);
@@ -75,7 +77,7 @@ public class RunPaymentManagement {
             // Create a context for a specific path and set the handler
             server.createContext("/", new MyHandler());
             server.createContext("/create-account", new AccountCreationHandler(accountService, transactionService));
-            server.createContext("/pay-now", new PayNowHandler(transferProcessor, accountService));
+            server.createContext("/pay-now", new PayHandler(transferProcessor, accountService, loanService));
 
             // Start the server
             server.setExecutor(null); // Use the default executor

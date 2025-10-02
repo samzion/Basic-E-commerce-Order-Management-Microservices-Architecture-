@@ -9,6 +9,15 @@ import java.util.List;
 public class PaymentRequest {
     private double totalAmount;
     private List<MerchantPayment> merchantPayments;
+    private boolean payLater;
+
+    public boolean isPaylater() {
+        return payLater;
+    }
+
+    public void setPaylater(boolean paylater) {
+        this.payLater = paylater;
+    }
 
     public double getTotalAmount() {
         return totalAmount;

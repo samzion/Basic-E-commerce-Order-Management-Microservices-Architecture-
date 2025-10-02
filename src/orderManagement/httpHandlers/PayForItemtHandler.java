@@ -149,6 +149,7 @@ public class PayForItemtHandler extends BaseHandler implements HttpHandler {
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setTotalAmount(totalAmount);
         paymentRequest.setMerchantPayments(merchantPayments);
+        paymentRequest.setPaylater(payForItemRequest.isPayLater());
 
         //call payment service client
         PaymentServiceClient paymentServiceClient = new PaymentServiceClient();
@@ -168,6 +169,7 @@ public class PayForItemtHandler extends BaseHandler implements HttpHandler {
         try {
             orderItemService.updateOrderItem(orderItem);
             orderService.updateOrder(order);
+            productService.reduceStock(productId, quantityRequested);
             RunOrderManagement.writeHttpResponse(exchange, paymentResponse.getStatus(), paymentResponse.getMessage());
         } catch (SQLException ex) {
             RunOrderManagement.writeHttpResponse(exchange, 500, "Unknown error! Request for refund if debited");
