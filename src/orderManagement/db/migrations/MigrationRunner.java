@@ -16,8 +16,8 @@ public class MigrationRunner {
         migrations.add(new OrderMigration());
         migrations.add(new OrderItemMigration());
         migrations.add(new ShipmentMigration());
+        migrations.add(new AddTransactionToOrderMigration());
     }
-
     public void runMigrations(Connection conn) throws SQLException {
         for (IMigration migration : migrations) {
             migration.run(conn);

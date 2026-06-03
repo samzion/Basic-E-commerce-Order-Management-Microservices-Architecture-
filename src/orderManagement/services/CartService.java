@@ -66,6 +66,33 @@ public class CartService {
         return cart; //cart found or not found
     }
 
+    public Cart getActiveCartDetails(int userId, int cartId) throws SQLException {
+        String sql = """ 
+                SELECT *
+                FROM carts
+                WHERE user_id = ? AND id = ? AND status = 'OPEN'
+                ;
+                """;
+        Cart cart = new Cart();
+        try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
+            pStatement.setInt(1, userId);
+            pStatement.setInt(2, cartId);
+            try (ResultSet rs = pStatement.executeQuery()) {
+                if (rs.next()) {
+                    cart.setId(rs.getInt("id"));
+                    cart.setUserId(rs.getInt("user_id"));
+                    cart.setStatus(rs.getString("status"));
+                    cart.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+                    cart.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+                }
+
+            }
+        } catch (SQLException e) {
+            System.out.println("Unknown error");
+            return null; //error occurred
+        }
+        return cart; //cart found or not found
+    }
     public Cart createCart(int userId){
         String sql = "INSERT INTO carts (user_id) " +
                 "VALUES (?)";
@@ -84,5 +111,20 @@ public class CartService {
             return null;
         }
 
+    }
+
+    public boolean checkOutCart(int cartId) {
+        String sql =
+                "UPDATE carts SET status = 'CHECKEDOUT' WHERE id = ? ";
+
+        try ( PreparedStatement pStatement = connection.prepareStatement(sql)){
+
+            pStatement.setInt(1, cartId);
+            int rowsUpdated = pStatement.executeUpdate();
+            return rowsUpdated > 0; // true if status updated successfully
+        } catch (SQLException e) {
+            System.err.println("Error updating stock: " + e.getMessage());
+            return false;
+        }
     }
 }

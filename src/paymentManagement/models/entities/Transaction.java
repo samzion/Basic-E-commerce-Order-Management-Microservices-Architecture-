@@ -6,13 +6,31 @@ import paymentManagement.enums.TransactionType;
 import java.time.LocalDateTime;
 
 public class Transaction {
-    TransactionType transactionType;
-    LocalDateTime transactionDateTime;
+    private TransactionType transactionType;
+    private LocalDateTime transactionDateTime;
+    private String sourceAccount;
+    private String destinationAccount;
     double amount;
     double balance;
     private LocalDateTime createdON;
     private LocalDateTime updatedON;
     private  int transactionId;
+
+    public String getSourceAccount() {
+        return sourceAccount;
+    }
+
+    public void setSourceAccount(String sourceAccount) {
+        this.sourceAccount = sourceAccount;
+    }
+
+    public String getDestinationAccount() {
+        return destinationAccount;
+    }
+
+    public void setDestinationAccount(String destinationAccount) {
+        this.destinationAccount = destinationAccount;
+    }
 
     public LocalDateTime getCreatedON() {
         return createdON;

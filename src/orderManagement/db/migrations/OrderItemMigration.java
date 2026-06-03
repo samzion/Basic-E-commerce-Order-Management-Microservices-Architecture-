@@ -15,7 +15,7 @@ public class OrderItemMigration implements IMigration {
                   order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
                   product_id BIGINT NOT NULL REFERENCES products(id),
                   quantity INT NOT NULL CHECK (quantity > 0),
-                  status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+                  status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
                   price DECIMAL(12,2) NOT NULL,                 -- price at time of purchase
                   total DECIMAL(12,2) GENERATED ALWAYS AS (quantity * price) STORED,
                   created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

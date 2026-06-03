@@ -1,9 +1,9 @@
-package orderManagement.services;
+package paymentManagement.services;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
-import orderManagement.models.responses.UserMerchantDetails;
-import orderManagement.models.responses.UserMerchantPlusMessage;
+import paymentManagement.models.response.UserMerchantDetails;
+import paymentManagement.models.response.UserMerchantPlusMessage;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -26,6 +26,13 @@ public class UserServiceClient {
         getMerchantUrl = merchantUrl;
         getUserByAuthorisationUrl = userUrl;
     }
+
+    // Response DTO
+
+
+
+
+
 
     public UserMerchantPlusMessage getUserMerchantDetails(HttpExchange exchange) throws Exception {
         var headers = exchange.getRequestHeaders();
@@ -62,7 +69,7 @@ public class UserServiceClient {
         public UserMerchantDetails validateUser(String auth) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(getUserByAuthorisationUrl))
-                    .header("Authorization", auth) // just forward it
+                .header("Authorization", auth)
                 .GET()
                 .build();
 

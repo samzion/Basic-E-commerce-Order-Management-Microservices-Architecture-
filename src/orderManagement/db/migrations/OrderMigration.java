@@ -13,7 +13,7 @@ public class OrderMigration implements IMigration {
               CREATE TABLE IF NOT EXISTS orders (
                          id BIGSERIAL PRIMARY KEY,
                          user_id BIGINT NOT NULL,                      -- buyer (from UserManagement DB)
-                         status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+                         status VARCHAR(20) DEFAULT 'PENDING',         -- PENDING, CONFIRMED, CANCELLED
                          created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                          updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                      );

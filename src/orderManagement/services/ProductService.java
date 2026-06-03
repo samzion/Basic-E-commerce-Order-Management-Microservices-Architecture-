@@ -41,6 +41,35 @@ public class ProductService {
         return null;
     }
 
+    public List<Product> getProductByMerchantId(int merchantId) throws SQLException {
+
+        String sql = """ 
+                SELECT *
+                FROM products
+                WHERE merchant_id = ?
+                ;
+                """;
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        pStatement.setInt(1, merchantId);
+
+        ResultSet rs = pStatement.executeQuery();
+        List<Product> products = new ArrayList<>();
+        while(rs.next()){
+            Product product =new Product();
+            System.out.println("product exists with this merchant_id.");
+            product.setId( rs.getInt("id"));
+            product.setMerchantId( rs.getInt("merchant_id"));
+            product.setName(rs.getString("name"));
+            product.setCategory(rs.getString("category"));
+            product.setPrice(rs.getDouble("price"));
+            product.setStock(rs.getInt("stock"));
+            product.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            product.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            products.add(product);
+        }
+        return  products;
+    }
+
     public Product insertProduct(Product product) throws SQLException {
 
         String sql = "INSERT INTO products (merchant_id, name, category, price, stock) " +
@@ -62,7 +91,7 @@ public class ProductService {
         }
     }
 
-    public Product ExistingProduct(int productId) throws SQLException {
+    public Product existingProduct(int productId) throws SQLException {
 
         String sql = """ 
                 SELECT *

@@ -6,9 +6,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import orderManagement.RunOrderManagement;
 import orderManagement.models.entties.Product;
+import orderManagement.models.requests.ReduceStockRequest;
 import orderManagement.models.responses.UserMerchantDetails;
 import orderManagement.models.responses.UserMerchantPlusMessage;
-import orderManagement.models.requests.ReduceStockRequest;
 import orderManagement.services.ProductService;
 import orderManagement.services.UserServiceClient;
 import userManagement.RunUserManagement;
@@ -107,7 +107,7 @@ public class ReduceStockHandler extends BaseHandler implements HttpHandler {
         // confirm whether merchantID matches merchant_id in products table
         Product existinProduct;
         try {
-            existinProduct = productService.ExistingProduct(reduceStockRequest.getProductId());
+            existinProduct = productService.existingProduct(reduceStockRequest.getProductId());
         } catch (SQLException e) {
             RunOrderManagement.writeHttpResponse (exchange, 500, "Unknown error");
             return;

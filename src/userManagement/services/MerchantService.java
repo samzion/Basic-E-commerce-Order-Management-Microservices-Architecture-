@@ -6,6 +6,7 @@ import userManagement.models.Merchant;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MerchantService {
@@ -35,5 +36,26 @@ public class MerchantService {
         statement.executeUpdate();
         System.out.println("Merchant Created successfully!");
         return true;
+    }
+
+    public Merchant getMerchant(String userId, String businessName) throws SQLException {
+        String sql = "SELECT * FROM merchants WHERE user_id = ? AND business_name = ?";
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        pStatement.setString(1, userId);
+        pStatement.setString(2,businessName);
+        ResultSet rs = pStatement.executeQuery();
+        Merchant merchant=null;
+        if(rs.next()){
+            merchant = new Merchant();
+            System.out.println("A merchant with this user_id and business_name already exist.");
+            merchant.setId( rs.getInt("id")) ;
+            merchant.setBusinessName(rs.getString("business_name"));
+            merchant.setBusinessAddress(rs.getString("business_address"));
+            merchant.setPhoneNumber(rs.getString("phone_number"));
+            merchant.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            merchant.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            return  merchant;
+        }
+        return merchant;
     }
 }
