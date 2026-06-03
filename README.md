@@ -1,18 +1,42 @@
-# Basic E-Commerce Order Management — Microservices Architecture
+# E-Commerce Microservices — Pure Java
 
-A backend e-commerce system built in pure Java following a microservices architecture. Each service owns its own PostgreSQL database and communicates with other services over HTTP. No Spring or Quarkus — uses Java's built-in `com.sun.net.httpserver`, raw JDBC, and Gson.
+> A fully functional e-commerce backend built as three independent microservices — **no Spring, no framework**. Raw Java HTTP server, raw JDBC, three separate PostgreSQL databases.
+
+[![Java](https://img.shields.io/badge/Java-17+-007396?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Architecture](https://img.shields.io/badge/Architecture-Microservices-blueviolet)]()
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen)]()
 
 ---
 
-## Microservices Overview
+## Why This Exists
+
+Most Java microservices tutorials hand you Spring Boot and tell you to annotate your way to a working system. This project does it without the scaffolding — using only `com.sun.net.httpserver`, raw JDBC, and Gson. Building this way forces you to understand what frameworks actually do under the hood.
+
+---
+
+## What It Does
+
+A two-sided marketplace with three independently deployable services:
 
 | Service | Port | Database | Responsibility |
 |---------|------|----------|----------------|
-| User Management | 8000 | `user_db` | Registration, login, authentication, roles |
-| Payment Management | 8001 | `paymentmanagement` | Accounts, fund transfers, transactions, loans |
-| Order Management | 8002 | `ordermanagement` | Products, carts, orders, fulfillment |
+| **User Management** | 8000 | `user_db` | Registration, login, auth, roles |
+| **Payment Management** | 8001 | `paymentmanagement` | Accounts, fund transfers, transactions, pay-later loans |
+| **Order Management** | 8002 | `ordermanagement` | Products, carts, orders, fulfilment |
 
-Each service starts its own HTTP server, runs its own DB migrations at startup, and is independently deployable.
+Each service owns its database, runs its own migrations at startup, and is independently deployable. Services communicate over HTTP.
+
+---
+
+## User Roles
+
+| Role | Capabilities |
+|------|-------------|
+| **Guest** | Browse and filter products — no auth required |
+| **Customer** | Add to cart, checkout, pay, view own orders |
+| **Merchant** | List products, manage stock, process and fulfil order items |
+| **Admin** | Platform management (in progress) |
 
 ---
 
@@ -21,357 +45,187 @@ Each service starts its own HTTP server, runs its own DB migrations at startup, 
 | Layer | Technology |
 |-------|-----------|
 | Language | Java 17+ |
-| HTTP Server | `com.sun.net.httpserver` (built-in) |
+| HTTP Server | `com.sun.net.httpserver` — built-in, no framework |
 | Database | PostgreSQL |
-| DB Access | Raw JDBC (no ORM) |
+| DB Access | Raw JDBC — no ORM |
 | JSON | Gson 2.13.1 |
 | Password Hashing | jBCrypt 0.4 |
-| DB Client (dev) | DBeaver |
-| API Testing | Postman |
 | Containers | Docker (databases) |
 
 ---
 
-## Architecture Diagram
+## Architecture
 
 ```
-                         ┌──────────────────────────────┐
-                         │       Client (Postman/App)    │
-                         └──────────────┬───────────────┘
-                                        │
-             ┌──────────────────────────┼─────────────────────────┐
-             │                          │                          │
-    ┌────────▼────────┐      ┌──────────▼──────────┐   ┌──────────▼──────────┐
-    │  User Mgmt MS   │      │  Order Mgmt MS       │   │  Payment Mgmt MS    │
-    │   Port 8000     │◄─────│   Port 8002          │──►│   Port 8001         │
-    │                 │      │                      │   │                     │
-    │ - Register      │      │ - Products           │   │ - Accounts          │
-    │ - Login         │      │ - Cart               │   │ - Fund Transfers    │
-    │ - Auth          │      │ - Orders             │   │ - Transactions      │
-    │ - Roles         │      │ - Fulfillment        │   │ - Loans (pay later) │
-    └────────┬────────┘      └──────────┬───────────┘   └──────────┬──────────┘
-             │                          │                           │
-    ┌────────▼────────┐      ┌──────────▼───────────┐  ┌───────────▼──────────┐
-    │  user_db        │      │  ordermanagement DB   │  │  paymentmanagement   │
-    │  (PostgreSQL)   │      │  (PostgreSQL)         │  │  DB (PostgreSQL)     │
-    └─────────────────┘      └───────────────────────┘  └──────────────────────┘
+                    ┌─────────────────────────┐
+                    │   Client (Postman/App)   │
+                    └────────────┬────────────┘
+                                 │
+          ┌──────────────────────┼──────────────────────┐
+          │                      │                      │
+ ┌────────▼────────┐   ┌─────────▼─────────┐  ┌────────▼────────┐
+ │  User Mgmt MS   │   │  Order Mgmt MS     │  │ Payment Mgmt MS │
+ │   Port 8000     │◄──│   Port 8002        │─►│   Port 8001     │
+ │                 │   │                    │  │                 │
+ │ Register/Login  │   │ Products · Cart    │  │ Accounts        │
+ │ Auth · Roles    │   │ Orders · Fulfilment│  │ Transfers       │
+ └────────┬────────┘   └─────────┬──────────┘  │ Loans           │
+          │                      │             └────────┬────────┘
+    ┌─────▼──────┐        ┌──────▼───────┐      ┌──────▼───────┐
+    │  user_db   │        │ ordermgmt DB │      │ payment DB   │
+    └────────────┘        └──────────────┘      └──────────────┘
 ```
-
----
-
-## User Roles
-
-| Role | Capabilities |
-|------|-------------|
-| **Guest** | Browse and filter products (no auth required) |
-| **Customer** | Add to cart, checkout, pay, view own orders |
-| **Merchant** | List products, manage stock, process/fulfill order items |
-| **Admin** | Higher-level platform management (in progress) |
-
----
-
-## API Endpoints
-
-### Order Management Service (Port 8002)
-
-#### Products
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/insert-product` | Merchant | Create a new product listing |
-| GET | `/all-products` | None | List all in-stock products |
-| GET | `/products` | None | Filter products by category, merchant, name, price range |
-| POST | `/increase-stock` | Merchant | Add stock units to a product |
-| POST | `/reduce-stock` | Merchant | Remove stock units from a product |
-
-#### Cart & Orders
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/add-to-cart` | Customer | Add a product to the shopping cart |
-| POST | `/check-out` | Customer | Checkout cart → creates order → triggers payment |
-| POST | `/pay-for-this-item` | Customer | Direct single-product purchase (bypasses cart) |
-| GET | `/user-get-orders` | Customer | Retrieve authenticated user's orders |
-
-#### Merchant Fulfillment
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/process-order-item` | Merchant | Advance an order item's status |
-| GET | `/get-order-items` | Merchant | View order items for the merchant's products |
-
-### Payment Management Service (Port 8001)
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/pay-now` | Internal | Process payment; distribute funds to merchants |
-| GET | `/create-account` | Customer/Merchant | Create a bank account in the payment system |
-
-### Authentication Header Format
-All protected endpoints require:
-```
-Authorization: {userId}/{token}
-```
-The User Management service validates the token and returns the full user/merchant profile.
 
 ---
 
 ## Core Flows
 
-### 1. Shopping Cart → Checkout → Payment
+### Cart → Checkout → Payment
 ```
-User adds items to cart (price locked at add-time)
-       ↓
-User calls /check-out
-       ↓
-Cart marked CHECKEDOUT → Order created (PENDING)
-       ↓
-CartItems copied to OrderItems with current product prices
-       ↓
+Customer adds items to cart (price locked at add-time)
+  ↓
+POST /check-out
+  ↓
+Cart → CHECKEDOUT · Order created (PENDING)
+  ↓
 Per-merchant payment amounts calculated
-       ↓
-PaymentRequest sent to Payment MS (/pay-now)
-       ↓
-  ┌─── Payment success ──────────────────────────────┐
-  │  - All OrderItems → CONFIRMED                    │
-  │  - Order.transactionId set                       │
-  │  - Product stock reduced atomically              │
-  └──────────────────────────────────────────────────┘
-  ┌─── Insufficient funds + payLater=true ───────────┐
-  │  - Loan created (amount × 1.10 interest)         │
-  │  - Due in 2 weeks                                │
-  └──────────────────────────────────────────────────┘
+  ↓
+Payment request sent to Payment MS (/pay-now)
+  ↓
+  ├── Success
+  │     OrderItems → CONFIRMED
+  │     Product stock reduced atomically
+  │     Transaction ID stored on order
+  │
+  └── Insufficient funds + payLater=true
+        Loan created (principal × 1.10 interest, due in 2 weeks)
 ```
 
-### 2. Payment Distribution (within Payment MS)
+### Payment Distribution
 ```
-Customer account deducted (100%)
-       ↓
+Customer account debited (100%)
+  ↓
 Per merchant in order:
-  97.0% → Merchant's account
-   2.5% → Ecommerce admin account
-   0.5% → Retained by payment gateway
+  97.0% → Merchant account
+   2.5% → Platform admin account
+   0.5% → Payment gateway retained
 ```
 
-### 3. Order Item Lifecycle (Merchant Side)
+### Order Item Lifecycle (Merchant)
 ```
 PENDING → CONFIRMED → PROCESSING → SHIPPED → COMPLETED
-                   └─────────────────────────────────→ CANCELLED
+                  └──────────────────────────────────→ CANCELLED
 ```
 
 ---
 
-## Database Schema
+## API Reference
 
-### Order Management DB
+### Order Management (Port 8002)
 
-```
-products        (id, merchant_id, name, category, price, stock, ...)
-carts           (id, user_id, status[OPEN|CHECKEDOUT], ...)
-cart_items      (id, cart_id, product_id, quantity, price_at_add, status, ...)
-orders          (id, user_id, status[PENDING|CONFIRMED|CANCELLED], transaction_id, ...)
-order_items     (id, order_id, product_id, quantity, price, total[GENERATED], status, ...)
-```
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/insert-product` | Merchant | Create a product listing |
+| `GET` | `/all-products` | None | List all in-stock products |
+| `GET` | `/products` | None | Filter by category, merchant, name, price range |
+| `POST` | `/increase-stock` | Merchant | Add stock units |
+| `POST` | `/reduce-stock` | Merchant | Remove stock units |
+| `POST` | `/add-to-cart` | Customer | Add item to cart |
+| `POST` | `/check-out` | Customer | Checkout cart → creates order → triggers payment |
+| `POST` | `/pay-for-this-item` | Customer | Direct single-product purchase (bypasses cart) |
+| `GET` | `/user-get-orders` | Customer | Fetch authenticated user's orders |
+| `POST` | `/process-order-item` | Merchant | Advance an order item's status |
+| `GET` | `/get-order-items` | Merchant | View order items for merchant's products |
 
-### Payment Management DB
+### Payment Management (Port 8001)
 
-```
-accounts        (id, user_id, merchant_id, account_number, bank, balance, ...)
-transactions    (id, account_number, amount, transaction_type[CREDIT|DEBIT], balance_on_source, ...)
-loans           (id, account_id, amount_borrowed, amount_paid, due_date, ...)
-```
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/pay-now` | Internal | Process payment, distribute funds |
+| `GET` | `/create-account` | Customer/Merchant | Open a payment account |
 
----
-
-## Project Structure
-
-```
-src/
-├── Main.java
-├── orderManagement/
-│   ├── RunOrderManagement.java          # Entry point, port 8002
-│   ├── db/
-│   │   ├── DataBaseConnection.java
-│   │   └── migrations/
-│   │       ├── IMigration.java
-│   │       ├── MigrationRunner.java
-│   │       ├── ProductMigration.java
-│   │       ├── CartMigration.java
-│   │       ├── CartItemMigration.java
-│   │       ├── OrderMigration.java
-│   │       ├── OrderItemMigration.java
-│   │       ├── ShipmentMigration.java
-│   │       └── AddTransactionToOrderMigration.java
-│   ├── httpHandlers/
-│   │   ├── BaseHandler.java
-│   │   ├── InsertProductHandler.java
-│   │   ├── ListAvailProductsHandler.java
-│   │   ├── GetProductsByFilterHandler.java
-│   │   ├── IncreaseStockHandler.java
-│   │   ├── ReduceStockHandler.java
-│   │   ├── AddItemToCartHandler.java
-│   │   ├── CheckOutHandler.java
-│   │   ├── PayForItemtHandler.java
-│   │   ├── ProcessOrderItemHandler.java  # NEW
-│   │   ├── MerchantGetOrderItemHandler.java # NEW
-│   │   └── UserGetOrdersHandler.java     # NEW
-│   ├── models/
-│   │   ├── entties/
-│   │   │   ├── Product.java
-│   │   │   ├── Cart.java / CartItem.java
-│   │   │   ├── Order.java
-│   │   │   ├── OrderItem.java
-│   │   │   └── MerchantPayment.java
-│   │   ├── enums/
-│   │   │   └── OrderItemStatus.java      # NEW
-│   │   ├── requests/
-│   │   │   ├── InsertProductRequest.java
-│   │   │   ├── AddItemToCartRequest.java
-│   │   │   ├── CheckOutRequest.java
-│   │   │   ├── PayForItemRequest.java
-│   │   │   ├── PaymentRequest.java
-│   │   │   ├── ProcessOrderItemRequest.java # NEW
-│   │   │   ├── IncreaseStockRequest.java
-│   │   │   └── ReduceStockRequest.java
-│   │   └── responses/
-│   │       ├── PaymentResponse.java
-│   │       ├── UserMerchantDetails.java
-│   │       ├── UserMerchantPlusMessage.java
-│   │       └── CartItemResponse.java
-│   └── services/
-│       ├── ProductService.java
-│       ├── CartService.java
-│       ├── CartItemService.java
-│       ├── OrderService.java
-│       ├── OrderItemService.java
-│       ├── UserServiceClient.java
-│       └── PaymentServiceClient.java
-├── paymentManagement/
-│   ├── RunPaymentManagement.java         # Entry point, port 8001
-│   ├── db/ ...
-│   ├── httpHandlers/
-│   │   ├── PayHandler.java
-│   │   └── AccountCreationHandler.java
-│   ├── models/
-│   │   ├── bank/ (ITransfer, DefaultTransfer, GTBTransfer, UBATransfer)
-│   │   ├── entities/ (Account, Transaction, Loan)
-│   │   ├── requests/ (PayRequest, ...)
-│   │   └── response/ (PaymentResponse, AccountOperationResponse)
-│   └── services/
-│       ├── AccountService.java
-│       ├── TransactionService.java
-│       ├── LoanService.java
-│       └── UserServiceClient.java
-└── userManagement/
-    └── RunUserManagement.java            # Entry point, port 8000
-```
+**Auth header format:** `Authorization: {userId}/{token}`
 
 ---
 
-## Configuration
+## Running Locally
 
-Each service reads a `.properties` file at startup:
+**Prerequisites:** Java 17+, PostgreSQL (or Docker)
 
-**`orderManagementConfiguration.properties`**
+**Step 1 — Create databases:**
+```bash
+psql -U postgres -c "CREATE DATABASE user_db;"
+psql -U postgres -c "CREATE DATABASE ordermanagement;"
+psql -U postgres -c "CREATE DATABASE paymentmanagement;"
+```
+
+**Step 2 — Configure each service** by editing the `.properties` files:
 ```properties
+# orderManagementConfiguration.properties
 dbUrl=jdbc:postgresql://localhost:5432/ordermanagement
 dbUser=postgres
-dbPassword=<password>
-dbDriver=org.postgresql.Driver
+dbPassword=<your_password>
 getUserByAuthorisationUrl=http://localhost:8000/all-user-details
 paymentClientUrl=http://localhost:8001/pay-now
 ```
 
-**`paymentManagementConfiguration.properties`**
-```properties
-dbUrl=jdbc:postgresql://localhost:5433/paymentmanagement
-dbUser=admin
-dbPassword=<password>
-dbDriver=org.postgresql.Driver
-getUserByAuthorisationUrl=http://localhost:8000/all-user-details
-ecommerceAdminAccount=<account_number>
-paymentServiceAdminAccount=<account_number>
+**Step 3 — Start services in order** (User MS must be first — auth depends on it):
+```bash
+# Terminal 1
+java -cp ... userManagement.RunUserManagement      # port 8000
+
+# Terminal 2
+java -cp ... paymentManagement.RunPaymentManagement  # port 8001
+
+# Terminal 3
+java -cp ... orderManagement.RunOrderManagement     # port 8002
 ```
 
----
-
-## Running the App
-
-### Prerequisites
-- Java 17+
-- PostgreSQL (or Docker)
-- All three databases created: `user_db`, `ordermanagement`, `paymentmanagement`
-
-### Start Order
-1. Start User Management Service (port 8000) — must be up first for auth to work
-2. Start Payment Management Service (port 8001)
-3. Start Order Management Service (port 8002)
-
-Each service auto-runs DB migrations on first boot.
+Each service runs its DB migrations automatically on first boot.
 
 ---
 
-## What's Been Built (Current State)
+## What's Built
 
-- [x] User registration, login, and role-based auth (User MS)
+- [x] User registration, login, and role-based auth
 - [x] Product listing, filtering, and merchant stock management
-- [x] Shopping cart with multi-product support and price locking
+- [x] Shopping cart with multi-product support and price locking at add-time
 - [x] Cart checkout → order creation pipeline
 - [x] Direct single-item purchase (bypasses cart)
-- [x] Payment processing with per-merchant fund distribution
+- [x] Payment processing with per-merchant fund distribution (97/2.5/0.5 split)
 - [x] Pay-later via loan (10% interest, 2-week due date)
-- [x] Order item status lifecycle management (merchant-side)
+- [x] Order item status lifecycle — merchant-side fulfilment
 - [x] Merchant order item retrieval with filters
-- [x] User order history with filters
+- [x] User order history
 - [x] Transaction ID stored on confirmed orders
-- [x] Bank transfer strategy pattern (GTB, UBA, Default)
-- [x] Schema migration runner
+- [x] Bank transfer strategy pattern — GTB, UBA, Default implementations
+- [x] Schema migration runner (custom, no Liquibase)
 
 ---
 
-## Planned Features (Roadmap)
+## Roadmap
 
-### Near-Term
+**Near-term:**
 - [ ] Loan repayment endpoint (`POST /repay-loan`)
-- [ ] Stock reversal when an order item is CANCELLED
-- [ ] Cart item quantity update endpoint
-- [ ] Abandoned cart expiry (TTL / scheduled cleanup)
-- [ ] Idempotency keys on payment to prevent double-charging
-- [ ] Standardized JSON error response format
+- [ ] Stock reversal on order item cancellation
+- [ ] Idempotency keys on payment (prevent double-charging)
+- [ ] Pagination on all list endpoints
 
-### Architecture Improvements
-- [ ] JWT-based authentication (replace plaintext userId/token header)
+**Architecture:**
+- [ ] JWT auth (replace plaintext `userId/token` header)
 - [ ] HikariCP connection pooling (replace per-request JDBC connections)
-- [ ] DB transaction wrapping for checkout → pay → stock-reduce (ACID guarantee)
-- [ ] Saga/compensation logic for partial payment failure across merchants
-- [ ] Pagination on all list endpoints (`?page=0&size=20`)
-- [ ] Structured logging with SLF4J + Logback
+- [ ] DB transaction wrapping for checkout → pay → stock-reduce (full ACID guarantee)
+- [ ] Saga/compensation logic for partial payment failure
 
-### Infrastructure
-- [ ] Maven or Gradle build descriptor
-- [ ] Dockerfile for each service
-- [ ] `docker-compose.yml` for local full-stack startup
-- [ ] GitHub Actions CI pipeline (build → test → image push)
-- [ ] Move credentials to environment variables (12-factor config)
-
-### API & Documentation
-- [ ] API versioning (`/v1/...`)
-- [ ] OpenAPI / Swagger specification
-- [ ] `GET /health` liveness endpoint on each service
-- [ ] Unit tests (JUnit 5 + Mockito)
-- [ ] Integration tests (Testcontainers)
+**Infrastructure:**
+- [ ] Dockerfile per service + `docker-compose.yml`
+- [ ] GitHub Actions CI pipeline
+- [ ] Environment variable config (12-factor)
+- [ ] Unit + integration tests (JUnit 5, Mockito, Testcontainers)
 
 ---
 
-## Known Issues
+## Author
 
-| # | Location | Description |
-|---|----------|-------------|
-| 1 | `MerchantGetOrderItemHandler` | Returns `products` list instead of `orderItems` when filtering by productId |
-| 2 | `ProductService.sufficientStockProduct()` | SQL references column `quantity`; correct column name is `stock` |
-| 3 | `TransactionService.listTransactions()` | Queries `account_id` but `transactions` table stores `account_number` |
-| 4 | `OrderItemStatus` enum | `COMPETED` should be `COMPLETED` (typo) |
-| 5 | `models/entties/` | Directory name typo (should be `entities`) |
-
----
-
-## Contributing
-
-This project is under active development. Raise issues or PRs against the `main` branch. Feature branches follow the pattern `Add<FeatureName>`.
+**Samson Kayode** — Software Engineer  
+[LinkedIn](https://linkedin.com/in/kayodesamson) · [GitHub](https://github.com/samzion) · kayodesamson4@gmail.com
