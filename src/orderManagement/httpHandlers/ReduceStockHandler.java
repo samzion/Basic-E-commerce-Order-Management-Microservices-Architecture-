@@ -107,7 +107,7 @@ public class ReduceStockHandler extends BaseHandler implements HttpHandler {
         // confirm whether merchantID matches merchant_id in products table
         Product existinProduct;
         try {
-            existinProduct = productService.ExistingProduct(reduceStockRequest.getProductId());
+            existinProduct = productService.existingProduct(reduceStockRequest.getProductId());
         } catch (SQLException e) {
             RunOrderManagement.writeHttpResponse (exchange, 500, "Unknown error");
             return;

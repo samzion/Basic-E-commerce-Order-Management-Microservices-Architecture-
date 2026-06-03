@@ -1,5 +1,4 @@
-package orderManagement.requests;
-
+package orderManagement.models.requests;
 public class PayForItemRequest {
     private int productId;
     private int quantity;
@@ -39,3 +38,4 @@ public class PayForItemRequest {
         return "Request okay!";
     }
 }
+

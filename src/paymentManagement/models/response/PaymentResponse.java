@@ -5,6 +5,15 @@ import com.google.gson.Gson;
 public class PaymentResponse {
     private int status;
     private String message;
+    private  Long transactionId;
+
+    public Long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
+    }
 
     public int getStatus() {
         return status;

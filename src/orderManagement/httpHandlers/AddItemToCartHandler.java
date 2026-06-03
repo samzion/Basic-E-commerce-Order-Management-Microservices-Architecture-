@@ -132,7 +132,7 @@ public class AddItemToCartHandler extends BaseHandler implements HttpHandler {
         int quantityRequested = addItemToCartRequest.getQuantity();
         Product product;
         try {
-            product =  productService.ExistingProduct(productId);
+            product =  productService.existingProduct(productId);
         } catch (SQLException e) {
             RunOrderManagement.writeHttpResponse(exchange, 500, "Unknown error!");
             return;

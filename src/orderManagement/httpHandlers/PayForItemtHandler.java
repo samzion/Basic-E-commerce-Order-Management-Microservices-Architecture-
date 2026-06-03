@@ -9,11 +9,11 @@ import orderManagement.models.entties.MerchantPayment;
 import orderManagement.models.entties.Order;
 import orderManagement.models.entties.OrderItem;
 import orderManagement.models.entties.Product;
+import orderManagement.models.requests.PayForItemRequest;
 import orderManagement.models.requests.PaymentRequest;
 import orderManagement.models.responses.PaymentResponse;
 import orderManagement.models.responses.UserMerchantDetails;
 import orderManagement.models.responses.UserMerchantPlusMessage;
-import orderManagement.requests.PayForItemRequest;
 import orderManagement.services.*;
 import userManagement.RunUserManagement;
 import userManagement.utilities.LocalDateTimeAdapter;
@@ -101,7 +101,7 @@ public class PayForItemtHandler extends BaseHandler implements HttpHandler {
         int quantityRequested = payForItemRequest.getQuantity();
         Product product;
         try {
-            product = productService.ExistingProduct(productId);
+            product = productService.existingProduct(productId);
         } catch (SQLException e) {
             RunOrderManagement.writeHttpResponse(exchange, 500, "Unknown error!");
             return;
@@ -149,7 +149,8 @@ public class PayForItemtHandler extends BaseHandler implements HttpHandler {
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setTotalAmount(totalAmount);
         paymentRequest.setMerchantPayments(merchantPayments);
-        paymentRequest.setPaylater(payForItemRequest.isPayLater());
+        paymentRequest.setPayLater(payForItemRequest.isPayLater());
+        paymentRequest.setOrder_id(order.getId());
 
         //call payment service client
         PaymentServiceClient paymentServiceClient = new PaymentServiceClient();
@@ -167,12 +168,14 @@ public class PayForItemtHandler extends BaseHandler implements HttpHandler {
 
         //update orderItem status to confirmed
         try {
-            orderItemService.updateOrderItem(orderItem);
+            order.setTransactionId(paymentResponse.getTransactionId());
+            orderItemService.updateOrderItem(orderItem, "CONFIRMED");
             orderService.updateOrder(order);
             productService.reduceStock(productId, quantityRequested);
             RunOrderManagement.writeHttpResponse(exchange, paymentResponse.getStatus(), paymentResponse.getMessage());
         } catch (SQLException ex) {
             RunOrderManagement.writeHttpResponse(exchange, 500, "Unknown error! Request for refund if debited");
         }
+
     }
 }

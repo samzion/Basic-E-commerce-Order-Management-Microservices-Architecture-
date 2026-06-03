@@ -263,9 +263,11 @@ public class AccountService {
         sourceAccount.setBalance(balance);
         AccountService accountService = new AccountService();
         if(accountService.updateAccountBalance(sourceAccount)){
-            transactionService.createTransaction(sourceAccount, withdrawAmt, TransactionType.DEBIT);
+
+            Long transactionId = transactionService.createTransaction(sourceAccount, withdrawAmt, TransactionType.DEBIT);
             System.out.println("Withdrawal of " + withdrawAmt + " from " + sourceAccount.getAccountNumber() + "'s account is successful");
             accountOperationResponse.setStatusCode(200);
+            accountOperationResponse.setTransactionId(transactionId);
             accountOperationResponse.setMessage("Withdrawal request successful!");
             return accountOperationResponse;
         }

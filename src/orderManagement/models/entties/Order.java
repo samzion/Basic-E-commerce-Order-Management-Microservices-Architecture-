@@ -8,6 +8,7 @@ public class Order {
     private int id;
     private int userId;
     private String status;
+    private Long transactionId;
     private LocalDateTime createdOn;
     private LocalDateTime updatedOn;
 
@@ -28,6 +29,14 @@ public class Order {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public Long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 
     public String getStatus() {

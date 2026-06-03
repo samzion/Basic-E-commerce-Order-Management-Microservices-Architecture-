@@ -3,6 +3,7 @@ package paymentManagement.models.response;
 public class AccountOperationResponse {
     public int statusCode;
     public String message;
+    public Long transactionId;
 
     public int getStatusCode() {
         return statusCode;
@@ -18,5 +19,13 @@ public class AccountOperationResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 }

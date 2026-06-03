@@ -32,6 +32,7 @@ public class GTBTransfer implements ITransfer {
             if(depositResponse.getStatusCode() == 200) {
                 System.out.println("Using " + bank + " Transfer");
                 accountOperationResponse.setStatusCode(200);
+                accountOperationResponse.setTransactionId(withdrawResponse.getTransactionId());
                 accountOperationResponse.setMessage(source.getAccountName() + " Transferred " + amount + " to " + destination.getAccountName() + " successful!!!");
                 return accountOperationResponse;
             } else {

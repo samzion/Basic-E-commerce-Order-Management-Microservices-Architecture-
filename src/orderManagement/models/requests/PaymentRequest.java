@@ -7,18 +7,27 @@ import orderManagement.models.entties.MerchantPayment;
 import java.util.List;
 
 public class PaymentRequest {
+    private int order_id;
     private double totalAmount;
     private List<MerchantPayment> merchantPayments;
     private boolean payLater;
 
-    public boolean isPaylater() {
+    public boolean isPayLater() {
         return payLater;
     }
 
-    public void setPaylater(boolean paylater) {
-        this.payLater = paylater;
+    public void setPayLater(boolean payLater) {
+        this.payLater = payLater;
     }
 
+    public int getOrder_id() {
+        return order_id;
+    }
+
+    public void setOrder_id(int order_id) {
+        this.order_id = order_id;
+    }
+    
     public double getTotalAmount() {
         return totalAmount;
     }
@@ -56,6 +65,4 @@ public class PaymentRequest {
         }
         return "Pay Now request okay!";
     }
-
-
 }

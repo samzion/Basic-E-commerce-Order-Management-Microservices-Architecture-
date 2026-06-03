@@ -158,7 +158,8 @@ public class CheckOutHandler extends BaseHandler implements HttpHandler {
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setTotalAmount(totalAmount);
         paymentRequest.setMerchantPayments(merchantPayments);
-        paymentRequest.setPaylater(checkOutRequest.isPayLater());
+        paymentRequest.setPayLater(checkOutRequest.isPayLater());
+        paymentRequest.setOrder_id(order.getId());
 
         //call payment service client
         PaymentServiceClient paymentServiceClient = new PaymentServiceClient();
@@ -175,6 +176,7 @@ public class CheckOutHandler extends BaseHandler implements HttpHandler {
         }
         //update orderItem status to confirmed
         try {
+            order.setTransactionId(paymentResponse.getTransactionId());
             orderItemService.confirmOrderItems(order.getId());
             orderService.updateOrder(order);
             cartItemService.reduceStockPerProduct(cart.getId());

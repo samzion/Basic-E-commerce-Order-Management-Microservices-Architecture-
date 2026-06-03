@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderItemService {
     Connection connection;
@@ -75,19 +77,16 @@ public class OrderItemService {
     }
 
 
-
-
-
-    public boolean updateOrderItem(OrderItem orderItem) throws SQLException {
+    public boolean updateOrderItem(OrderItem orderItem, String status) throws SQLException {
         String sql = """
                 UPDATE order_items
-                SET status = 'CONFIRMED',
+                SET status = ?,
                     updated_on = CURRENT_TIMESTAMP
                 WHERE id = ?;
                 """;
         try ( PreparedStatement pStatement = connection.prepareStatement(sql)){
-
-            pStatement.setInt(1, orderItem.getId());
+            pStatement.setString(1,status);
+            pStatement.setInt(2, orderItem.getId());
 
 
             int rowsUpdated = pStatement.executeUpdate();
@@ -97,6 +96,110 @@ public class OrderItemService {
             return false;
         }
     }
-//TODO: add status to parameters of updateOrderItem to make it reusable
 
+    public OrderItem existingOrderItem(int orderItemId) throws SQLException {
+        String sql = """
+                SELECT *
+                FROM order_items
+                WHERE id = ?;
+        """;
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        pStatement.setInt(1, orderItemId);
+        ResultSet rs = pStatement.executeQuery();
+        OrderItem orderItem= new OrderItem();
+        if (rs.next()) {
+            System.out.println("Order Item exists.");
+            orderItem.setId(rs.getInt("id"));
+            orderItem.setOrderId(rs.getInt("order_id"));
+            orderItem.setProductId(rs.getInt("product_id"));
+            orderItem.setQuantity(rs.getInt("quantity"));
+            orderItem.setStatus(rs.getString("status"));
+            orderItem.setPrice(rs.getDouble("price"));
+            orderItem.setTotalAmount(rs.getDouble("total"));
+            orderItem.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            orderItem.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            return orderItem;
+        }
+        return null;
+    }
+
+    public OrderItem existingOrderItemByMerchantId(int orderItemId, int merchantId) throws SQLException {
+        String sql = """
+                        SELECT
+                            oi.id AS order_item_id, oi.order_id, oi.product_id, oi.quantity,
+                            oi.status, oi.price, total, 
+                            oi.created_on, oi.updated_on 
+                        FROM order_items as oi
+                        JOIN products p ON oi.product_id = p.id
+                        WHERE p.merchant_id = ? AND oi.id = ?;
+                """;
+        PreparedStatement pStatement = connection.prepareStatement(sql);
+        pStatement.setInt(2, orderItemId);
+        pStatement.setInt(1, merchantId);
+        ResultSet rs = pStatement.executeQuery();
+        OrderItem orderItem = new OrderItem();
+        if (rs.next()) {
+            System.out.println("Order Item exists.");
+            orderItem.setId(rs.getInt("order_item_id"));
+            orderItem.setOrderId(rs.getInt("order_id"));
+            orderItem.setProductId(rs.getInt("product_id"));
+            orderItem.setQuantity(rs.getInt("quantity"));
+            orderItem.setStatus(rs.getString("status"));
+            orderItem.setPrice(rs.getDouble("price"));
+            orderItem.setTotalAmount(rs.getDouble("total"));
+            orderItem.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+            orderItem.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+            return orderItem;
+        }
+        return null;
+    }
+
+    public List<OrderItem> getOrderItemsByFilters(String status, Integer productId, Integer merchantId) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT * FROM order_items AS oi " +
+                        "JOIN products AS p " +
+                        "ON oi.product_id = p.id " +
+                "WHERE  1=1 ");
+
+        List<Object> params = new ArrayList<>();
+
+        sql.append("AND p.merchant_id = ? ");
+        params.add(merchantId);
+        if (status!= null && !status.isEmpty()) {
+            sql.append("AND status = ? ");
+            params.add(status);
+        }
+        if (productId != null) {
+            sql.append("AND product_id = ? ");
+            params.add(productId);
+        }
+        try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            List<OrderItem> orderItems = new ArrayList<>();
+            while (rs.next()) {
+                OrderItem orderItem = new OrderItem();
+                System.out.println("Order Item exists.");
+                orderItem.setId(rs.getInt("id"));
+                orderItem.setOrderId(rs.getInt("order_id"));
+                orderItem.setProductId(rs.getInt("product_id"));
+                orderItem.setQuantity(rs.getInt("quantity"));
+                orderItem.setStatus(rs.getString("status"));
+                orderItem.setPrice(rs.getDouble("price"));
+                orderItem.setTotalAmount(rs.getDouble("total"));
+                orderItem.setCreatedOn(rs.getTimestamp("created_on").toLocalDateTime());
+                orderItem.setUpdatedOn(rs.getTimestamp("updated_on").toLocalDateTime());
+                orderItems.add(orderItem);
+            }
+            return orderItems;
+        } catch (SQLException e) {
+            System.out.println("Unknown error!");
+            return null;
+        }
+    }
 }
+
+

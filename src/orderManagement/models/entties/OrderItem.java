@@ -10,6 +10,7 @@ public class OrderItem {
     private int productId;
     private int quantity;
     private double price;
+    private double totalAmount;
     private String status;
     private LocalDateTime createdOn;
     private LocalDateTime updatedOn;
@@ -60,6 +61,14 @@ public class OrderItem {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 
     public LocalDateTime getCreatedOn() {

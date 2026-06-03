@@ -6,10 +6,7 @@ import paymentManagement.enums.TransactionType;
 import paymentManagement.models.entities.Account;
 import paymentManagement.models.entities.Transaction;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,23 +21,37 @@ public class TransactionService {
         this.connection = connection;
     }
 
-    public boolean createTransaction(Account sourceAccount, double amount, TransactionType transactionType) throws SQLException {
-        boolean flag = false;
-
+    public Long createTransaction(Account sourceAccount, double amount, TransactionType transactionType) throws SQLException {
         String query = """
-                        INSERT INTO transactions
-                            (account_number, amount, transaction_type,  balance_on_source)
-                            values (?, ?, ?, ?)
-                       """;
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setString(1, sourceAccount.getAccountNumber());
-        statement.setDouble(2, amount);
-        statement.setString(3, transactionType.toString());
-        statement.setDouble(4, sourceAccount.getBalance());
-        statement.executeUpdate();
-        System.out.println("Transaction successful!");
-        return true;
+        INSERT INTO transactions
+            (account_number, amount, transaction_type, balance_on_source)
+        VALUES (?, ?, ?, ?)
+        """;
+
+        try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, sourceAccount.getAccountNumber());
+            statement.setDouble(2, amount);
+            statement.setString(3, transactionType.toString());
+            statement.setDouble(4, sourceAccount.getBalance());
+
+            int rows = statement.executeUpdate();
+            if (rows == 0) {
+                throw new SQLException("Transaction insert failed, no rows affected.");
+            }
+
+            // ✅ Retrieve generated transactionId (Long)
+            try (ResultSet rs = statement.getGeneratedKeys()) {
+                if (rs.next()) {
+                    Long transactionId = rs.getLong(1);
+                    System.out.println("Transaction successful! ID = " + transactionId);
+                    return transactionId;
+                } else {
+                    throw new SQLException("Transaction insert failed, no ID obtained.");
+                }
+            }
+        }
     }
+
 
 //    public boolean createTransactionForTransfer(Account souceaccount, Account destinationAccount, double amount, TransactionType transactionType) throws SQLException {
 //        boolean flag = false;

@@ -5,6 +5,7 @@ import paymentManagement.models.entities.MerchantPayment;
 import java.util.List;
 
 public class PayRequest {
+    private  int orderId;
     private double totalAmount;
     private List<MerchantPayment> merchantPayments;
     private boolean payLater;
@@ -15,6 +16,14 @@ public class PayRequest {
 
     public void setPayLater(boolean payLater) {
         this.payLater = payLater;
+    }
+
+    public int getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(int orderId) {
+        this.orderId = orderId;
     }
 
     public double getTotalAmount() {
@@ -36,6 +45,9 @@ public class PayRequest {
     public static String validate(PayRequest payRequest){
         if(payRequest == null){
             return "PayNow request cannot be null";
+        }
+        if(payRequest.getOrderId() <= 0){
+            return "Order id cannot be 0 or negative";
         }
         if(payRequest.getTotalAmount() <= 0){
             return "Total amount cannot be 0 or negative";

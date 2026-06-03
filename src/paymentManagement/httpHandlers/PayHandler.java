@@ -158,6 +158,7 @@ public class PayHandler extends BaseHandler implements HttpHandler {
         //logic for sending 97% of totalAmount to merchant and 2.5% of totalAmount to ecommerceAccount and 0.5% to paymentAccount
         if (payMerchantAndEcommerceAdmin(exchange, payRequest, paymentResponse)){
             paymentResponse.setStatus(200);
+            paymentResponse.setTransactionId(transferFromCustomerResponse.getTransactionId());
             paymentResponse.setMessage("Payment successful!");
             String jsonResponse = gson.toJson(paymentResponse);
             RunPaymentManagement.writeHttpResponse(exchange, 200, jsonResponse);

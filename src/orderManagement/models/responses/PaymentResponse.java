@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 
 public class PaymentResponse {
     private int status;
+    private Long transactionId;
     private String message;
 
     public int getStatus() {
@@ -12,6 +13,14 @@ public class PaymentResponse {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public Long getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Long transactionId) {
+        this.transactionId = transactionId;
     }
 
     public String getMessage() {
